@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'DHI IA',
-  description: 'DHI IA Application',
+  title: 'DHI Data Lake',
+  description: 'DHI Data Lake - Intelligence Dashboard',
 }
 
 export default function RootLayout({
