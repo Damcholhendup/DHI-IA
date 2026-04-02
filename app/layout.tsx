@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'DHI Data Lake',
-  description: 'DHI Data Lake - Intelligence Dashboard',
+  title: 'DHI National Infrastructure Command Center',
+  description: 'DHI National Infrastructure Command Center - Real-time monitoring of Bhutan\'s critical infrastructure',
 }
 
 export default function RootLayout({

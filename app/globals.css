@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-primary: #060b18;
+  --bg-secondary: #0c1425;
+  --bg-card: #0f1a2e;
+  --bg-card-hover: #132240;
+  --border-color: #1a2744;
+  --accent-cyan: #00e5ff;
+  --accent-amber: #ffab00;
+  --accent-green: #00e676;
+  --accent-red: #ff1744;
+  --accent-purple: #d500f9;
+  --text-primary: #e8edf5;
+  --text-secondary: #7a8baa;
+  --glow-cyan: 0 0 20px rgba(0, 229, 255, 0.3);
+  --glow-amber: 0 0 20px rgba(255, 171, 0, 0.3);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -9,7 +26,140 @@
 }
 
 body {
-  background-color: #f3f4f6;
-  color: #212529;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2a3a5c;
+}
+
+/* Map container overrides */
+.leaflet-container {
+  background: var(--bg-primary) !important;
+}
+.leaflet-control-zoom {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+.leaflet-control-zoom a {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  font-size: 16px !important;
+}
+.leaflet-control-zoom a:hover {
+  background: var(--bg-card-hover) !important;
+}
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+/* Glow pulse animation for markers */
+@keyframes glow-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 4px rgba(0, 229, 255, 0.4), 0 0 8px rgba(0, 229, 255, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.3);
+  }
+}
+
+@keyframes glow-pulse-amber {
+  0%, 100% { 
+    box-shadow: 0 0 4px rgba(255, 171, 0, 0.4), 0 0 8px rgba(255, 171, 0, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 8px rgba(255, 171, 0, 0.6), 0 0 20px rgba(255, 171, 0, 0.3);
+  }
+}
+
+@keyframes glow-pulse-green {
+  0%, 100% { 
+    box-shadow: 0 0 4px rgba(0, 230, 118, 0.4), 0 0 8px rgba(0, 230, 118, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 8px rgba(0, 230, 118, 0.6), 0 0 20px rgba(0, 230, 118, 0.3);
+  }
+}
+
+@keyframes glow-pulse-red {
+  0%, 100% { 
+    box-shadow: 0 0 4px rgba(255, 23, 68, 0.4), 0 0 8px rgba(255, 23, 68, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 8px rgba(255, 23, 68, 0.6), 0 0 20px rgba(255, 23, 68, 0.3);
+  }
+}
+
+@keyframes glow-pulse-purple {
+  0%, 100% { 
+    box-shadow: 0 0 4px rgba(213, 0, 249, 0.4), 0 0 8px rgba(213, 0, 249, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 8px rgba(213, 0, 249, 0.6), 0 0 20px rgba(213, 0, 249, 0.3);
+  }
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Glassmorphism panel */
+.glass-panel {
+  background: rgba(12, 20, 37, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(26, 39, 68, 0.8);
+}
+
+/* Custom leaflet popup */
+.leaflet-popup-content-wrapper {
+  background: rgba(12, 20, 37, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+.leaflet-popup-tip {
+  background: rgba(12, 20, 37, 0.95) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+}
+.leaflet-popup-close-button {
+  color: var(--text-secondary) !important;
+}
+.leaflet-popup-close-button:hover {
+  color: var(--accent-cyan) !important;
 }

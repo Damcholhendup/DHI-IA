@@ -1,80 +1,61 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import type { InfraAsset } from '../data/infrastructure'
+import { infrastructureAssets, typeColors } from '../data/infrastructure'
 
-// Fix for default marker icons in react-leaflet
-const icon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-})
+export type { InfraAsset }
 
-// Custom tower icon
-const towerIcon = L.divIcon({
-  className: 'custom-tower-icon',
-  html: `<div style="background: #10b981; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
-  iconSize: [16, 16],
-  iconAnchor: [8, 8]
-})
-
-const maintenanceIcon = L.divIcon({
-  className: 'custom-maintenance-icon',
-  html: `<div style="background: #f97316; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
-  iconSize: [16, 16],
-  iconAnchor: [8, 8]
-})
-
-interface NetworkMapProps {
-  darkMode?: boolean
+const typeIcons: Record<string, string> = {
+  hydropower: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#00e5ff" fill-opacity="0.15" stroke="#00e5ff" stroke-width="1.5"/><path d="M14 7v6l4 3" stroke="#00e5ff" stroke-width="2" stroke-linecap="round"/><path d="M10 17h8" stroke="#00e5ff" stroke-width="2" stroke-linecap="round"/><path d="M12 20h4" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  telecom: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="4" fill="#00e676" fill-opacity="0.8"/><circle cx="10" cy="10" r="8" stroke="#00e676" stroke-width="1" stroke-opacity="0.3"/></svg>`,
+  airline: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#ffab00" fill-opacity="0.15" stroke="#ffab00" stroke-width="1.5"/><path d="M14 8l3 6H11l3-6z" fill="#ffab00"/><path d="M10 16h8" stroke="#ffab00" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  mining: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="4" y="4" width="20" height="20" rx="4" fill="#ff1744" fill-opacity="0.15" stroke="#ff1744" stroke-width="1.5"/><path d="M10 18l4-10 4 10" stroke="#ff1744" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  solar: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#ffd600" fill-opacity="0.15" stroke="#ffd600" stroke-width="1.5"/><circle cx="14" cy="14" r="4" fill="#ffd600" fill-opacity="0.6"/><line x1="14" y1="4" x2="14" y2="8" stroke="#ffd600" stroke-width="1.5"/><line x1="14" y1="20" x2="14" y2="24" stroke="#ffd600" stroke-width="1.5"/><line x1="4" y1="14" x2="8" y2="14" stroke="#ffd600" stroke-width="1.5"/><line x1="20" y1="14" x2="24" y2="14" stroke="#ffd600" stroke-width="1.5"/></svg>`,
+  substation: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="6" y="6" width="16" height="16" rx="2" fill="#d500f9" fill-opacity="0.15" stroke="#d500f9" stroke-width="1.5"/><circle cx="14" cy="14" r="4" stroke="#d500f9" stroke-width="1.5"/><path d="M14 10v8M10 14h8" stroke="#d500f9" stroke-width="1.5"/></svg>`,
+  wind: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#00bfa5" fill-opacity="0.15" stroke="#00bfa5" stroke-width="1.5"/><path d="M14 8v12M14 14l-5-3M14 14l5-3M14 14l-5 3M14 14l5 3" stroke="#00bfa5" stroke-width="1.5" stroke-linecap="round"/></svg>`,
 }
 
-export default function NetworkMap({ darkMode = false }: NetworkMapProps) {
-  // Cell tower locations across Bhutan
-  const cellTowers = [
-    // Thimphu region
-    { id: 1, name: 'Thimphu Central Tower', position: [27.4728, 89.6393] as [number, number], status: 'active', coverage: 15, traffic: '2.3M' },
-    { id: 2, name: 'Thimphu North', position: [27.5128, 89.6493] as [number, number], status: 'active', coverage: 12, traffic: '1.8M' },
-    { id: 3, name: 'Thimphu South', position: [27.4328, 89.6293] as [number, number], status: 'active', coverage: 14, traffic: '2.1M' },
-    
-    // Paro region
-    { id: 4, name: 'Paro Airport Tower', position: [27.4287, 89.4164] as [number, number], status: 'active', coverage: 18, traffic: '3.5M' },
-    { id: 5, name: 'Paro Town', position: [27.4387, 89.4264] as [number, number], status: 'maintenance', coverage: 10, traffic: '1.2M' },
-    
-    // Punakha region
-    { id: 6, name: 'Punakha Valley', position: [27.5911, 89.8640] as [number, number], status: 'active', coverage: 16, traffic: '1.9M' },
-    { id: 7, name: 'Punakha North', position: [27.6211, 89.8840] as [number, number], status: 'active', coverage: 13, traffic: '1.5M' },
-    
-    // Bumthang region
-    { id: 8, name: 'Bumthang Central', position: [27.5512, 90.7389] as [number, number], status: 'active', coverage: 20, traffic: '2.8M' },
-    { id: 9, name: 'Jakar Town', position: [27.5712, 90.7589] as [number, number], status: 'active', coverage: 11, traffic: '1.4M' },
-    
-    // Phuentsholing region
-    { id: 10, name: 'Phuentsholing Border', position: [26.8626, 89.3929] as [number, number], status: 'active', coverage: 17, traffic: '4.2M' },
-    { id: 11, name: 'Phuentsholing Central', position: [26.8726, 89.4029] as [number, number], status: 'active', coverage: 15, traffic: '3.8M' },
-    
-    // Eastern region
-    { id: 12, name: 'Mongar Tower', position: [27.2747, 91.2395] as [number, number], status: 'active', coverage: 19, traffic: '2.5M' },
-    { id: 13, name: 'Trashigang Hub', position: [27.3333, 91.5547] as [number, number], status: 'active', coverage: 21, traffic: '3.1M' },
-    
-    // Western region
-    { id: 14, name: 'Haa Valley', position: [27.3806, 89.2864] as [number, number], status: 'maintenance', coverage: 14, traffic: '1.1M' },
-    { id: 15, name: 'Samtse Region', position: [26.9000, 89.1000] as [number, number], status: 'active', coverage: 16, traffic: '2.0M' },
+function makeIcon(type: string) {
+  const html = typeIcons[type] || typeIcons.telecom
+  const size = type === 'telecom' ? 20 : 28
+  return L.divIcon({
+    className: '',
+    html: `<div style="filter: drop-shadow(0 0 6px ${typeColors[type]}40);">${html}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -size / 2],
+  })
+}
+
+// Transmission lines connecting substations to power plants
+const transmissionLines: Array<{ from: [number, number]; to: [number, number]; type: 'high' | 'medium' }> = [
+  { from: [27.45, 90.08], to: [27.03, 90.12], type: 'high' },
+  { from: [27.09, 89.56], to: [27.44, 89.68], type: 'high' },
+  { from: [27.07, 89.55], to: [27.44, 89.68], type: 'high' },
+  { from: [27.44, 89.68], to: [27.03, 90.12], type: 'medium' },
+  { from: [27.03, 90.12], to: [26.86, 90.47], type: 'high' },
+  { from: [27.57, 91.12], to: [27.03, 90.12], type: 'medium' },
+  { from: [27.48, 89.91], to: [27.44, 89.68], type: 'medium' },
+  { from: [26.87, 90.49], to: [26.86, 90.47], type: 'medium' },
+]
+
+interface NetworkMapProps {
+  onAssetClick: (asset: InfraAsset) => void
+  selectedAsset: InfraAsset | null
+  activeFilters: string[]
+}
+
+export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters }: NetworkMapProps) {
+  const center: [number, number] = [27.4, 90.4]
+  const bhutanBounds: [[number, number], [number, number]] = [
+    [26.5, 88.5],
+    [28.5, 92.3]
   ]
 
-  // Center of Bhutan
-  const center: [number, number] = [27.5142, 90.4336]
-  
-  // Bhutan's geographical boundaries
-  const bhutanBounds: [[number, number], [number, number]] = [
-    [26.7, 88.8],  // Southwest corner
-    [28.3, 92.1]   // Northeast corner
-  ]
+  const filteredAssets = infrastructureAssets.filter(a => activeFilters.includes(a.type))
 
   return (
     <div className="w-full h-full relative">
@@ -82,60 +63,79 @@ export default function NetworkMap({ darkMode = false }: NetworkMapProps) {
         center={center}
         zoom={8}
         minZoom={7}
-        maxZoom={13}
+        maxZoom={14}
         maxBounds={bhutanBounds}
         maxBoundsViscosity={1.0}
-        style={{ height: '100%', width: '100%', borderRadius: '0.75rem' }}
+        style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
+        zoomControl={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url={
-            darkMode
-              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-              : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-          }
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
-        
-        {cellTowers.map((tower) => (
-          <div key={tower.id}>
-            <Marker
-              position={tower.position}
-              icon={tower.status === 'maintenance' ? maintenanceIcon : towerIcon}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <h3 className="font-bold text-slate-800">{tower.name}</h3>
-                  <div className="mt-2 space-y-1 text-xs">
-                    <p>
-                      <span className="font-semibold">Status:</span>{' '}
-                      <span className={tower.status === 'active' ? 'text-emerald-600' : 'text-orange-600'}>
-                        {tower.status === 'active' ? 'Active' : 'Maintenance'}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="font-semibold">Coverage:</span> {tower.coverage}km radius
-                    </p>
-                    <p>
-                      <span className="font-semibold">Traffic:</span> {tower.traffic} requests/day
-                    </p>
-                  </div>
+
+        {/* Transmission lines */}
+        {activeFilters.includes('hydropower') && transmissionLines.map((line, i) => (
+          <Polyline
+            key={`line-${i}`}
+            positions={[line.from, line.to]}
+            pathOptions={{
+              color: line.type === 'high' ? '#00e5ff' : '#d500f9',
+              weight: line.type === 'high' ? 1.5 : 1,
+              opacity: 0.25,
+              dashArray: line.type === 'medium' ? '6 4' : undefined,
+            }}
+          />
+        ))}
+
+        {/* Telecom coverage dots */}
+        {filteredAssets.filter(a => a.type === 'telecom').map((asset) => (
+          <CircleMarker
+            key={`coverage-${asset.id}`}
+            center={asset.position}
+            radius={30}
+            pathOptions={{
+              color: typeColors[asset.type],
+              fillColor: typeColors[asset.type],
+              fillOpacity: 0.04,
+              weight: 0.5,
+              opacity: 0.15,
+            }}
+          />
+        ))}
+
+        {/* Asset markers */}
+        {filteredAssets.map((asset) => (
+          <Marker
+            key={asset.id}
+            position={asset.position}
+            icon={makeIcon(asset.type)}
+            eventHandlers={{
+              click: () => onAssetClick(asset),
+            }}
+          >
+            <Popup>
+              <div className="min-w-[180px]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full" style={{ background: typeColors[asset.type] }} />
+                  <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: typeColors[asset.type] }}>
+                    {asset.type}
+                  </span>
                 </div>
-              </Popup>
-            </Marker>
-            
-            {/* Coverage circle */}
-            <Circle
-              center={tower.position}
-              radius={tower.coverage * 1000} // Convert km to meters
-              pathOptions={{
-                color: tower.status === 'maintenance' ? '#f97316' : '#10b981',
-                fillColor: tower.status === 'maintenance' ? '#f97316' : '#10b981',
-                fillOpacity: 0.1,
-                weight: 1,
-              }}
-            />
-          </div>
+                <h3 className="font-bold text-sm text-white mb-1">{asset.name}</h3>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                    asset.status === 'operational' ? 'bg-green-400' : 
+                    asset.status === 'maintenance' ? 'bg-amber-400' : 'bg-red-400'
+                  }`} />
+                  <span className="text-slate-400 capitalize">{asset.status}</span>
+                </div>
+                {asset.capacity && (
+                  <p className="text-xs text-slate-400 mt-1">Capacity: {asset.capacity}</p>
+                )}
+              </div>
+            </Popup>
+          </Marker>
         ))}
       </MapContainer>
     </div>
