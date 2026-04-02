@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import type { InfraAsset } from './data/infrastructure'
 import { infrastructureAssets } from './data/infrastructure'
+import { dhiCompanies } from './data/dhi-group-data'
 
 const NetworkMap = dynamic(() => import('./components/NetworkMap'), {
   ssr: false,
@@ -15,13 +16,43 @@ const NetworkMap = dynamic(() => import('./components/NetworkMap'), {
           <div className="absolute inset-0 rounded-full border-t-2 border-cyan-400 animate-spin" />
           <div className="absolute inset-2 rounded-full border-t-2 border-purple-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
         </div>
-        <p className="text-sm text-slate-500 tracking-widest uppercase">Initializing Command Center</p>
+        <p className="text-sm text-slate-500 tracking-widest uppercase">Loading Map...</p>
       </div>
     </div>
   ),
 })
 
+const DHIGroupDashboard = dynamic(() => import('./components/DHIGroupDashboard'), {
+  ssr: false,
+  loading: () => <DashboardLoader label="DHI Group" />,
+})
+
+const BTDashboard = dynamic(() => import('./components/BTDashboard'), {
+  ssr: false,
+  loading: () => <DashboardLoader label="Bhutan Telecom" />,
+})
+
+const DrukAirDashboard = dynamic(() => import('./components/DrukAirDashboard'), {
+  ssr: false,
+  loading: () => <DashboardLoader label="Druk Air" />,
+})
+
+function DashboardLoader({ label }: { label: string }) {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="text-center">
+        <div className="relative w-12 h-12 mx-auto mb-3">
+          <div className="absolute inset-0 rounded-full border-t-2 border-cyan-400 animate-spin" />
+        </div>
+        <p className="text-sm text-slate-500 tracking-widest uppercase">Loading {label} Data...</p>
+      </div>
+    </div>
+  )
+}
+
 const allTypes = ['hydropower', 'telecom', 'airline', 'mining', 'solar', 'substation']
+
+type CompanyView = string
 
 const categoryConfig: Record<string, { label: string; icon: JSX.Element; color: string }> = {
   hydropower: {
@@ -34,7 +65,7 @@ const categoryConfig: Record<string, { label: string; icon: JSX.Element; color: 
     ),
   },
   telecom: {
-    label: 'Telecom Infrastructure',
+    label: 'Telecom',
     color: '#00e676',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00e676" strokeWidth="2" strokeLinecap="round">
@@ -43,7 +74,7 @@ const categoryConfig: Record<string, { label: string; icon: JSX.Element; color: 
     ),
   },
   airline: {
-    label: 'Airline & Airports',
+    label: 'Airports',
     color: '#ffab00',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffab00" strokeWidth="2" strokeLinecap="round">
@@ -52,7 +83,7 @@ const categoryConfig: Record<string, { label: string; icon: JSX.Element; color: 
     ),
   },
   mining: {
-    label: 'Mining & Industrial',
+    label: 'Mining',
     color: '#ff1744',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff1744" strokeWidth="2" strokeLinecap="round">
@@ -61,7 +92,7 @@ const categoryConfig: Record<string, { label: string; icon: JSX.Element; color: 
     ),
   },
   solar: {
-    label: 'Solar Energy',
+    label: 'Solar',
     color: '#ffd600',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffd600" strokeWidth="2" strokeLinecap="round">
@@ -80,14 +111,45 @@ const categoryConfig: Record<string, { label: string; icon: JSX.Element; color: 
   },
 }
 
-const tabs = ['Assets', 'Status', 'Coverage', 'Analytics', 'Reports']
-
 export default function Home() {
+  const [activeView, setActiveView] = useState<CompanyView>('map')
   const [selectedAsset, setSelectedAsset] = useState<InfraAsset | null>(null)
   const [activeFilters, setActiveFilters] = useState<string[]>(allTypes)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('Assets')
   const [detailOpen, setDetailOpen] = useState(false)
+  const [companySearch, setCompanySearch] = useState('')
+  const [carouselPaused, setCarouselPaused] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const [dropdownPos, setDropdownPos] = useState({ top: 60, left: 0 })
+
+  useEffect(() => {
+    const update = () => {
+      if (searchRef.current) {
+        const rect = searchRef.current.getBoundingClientRect()
+        setDropdownPos({ top: rect.bottom + 4, left: rect.left })
+      }
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  const orderedCompanies = useMemo(() => {
+    const priority = ['bt', 'drukair']
+    return [
+      ...priority.map(id => dhiCompanies.find(c => c.id === id)!),
+      ...dhiCompanies.filter(c => !priority.includes(c.id))
+    ]
+  }, [])
+
+  const searchResults = useMemo(() => {
+    if (!companySearch.trim()) return []
+    const q = companySearch.toLowerCase()
+    return orderedCompanies.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.shortName.toLowerCase().includes(q) ||
+      c.sector.toLowerCase().includes(q)
+    )
+  }, [companySearch, orderedCompanies])
 
   const toggleFilter = (type: string) => {
     setActiveFilters(prev =>
@@ -112,9 +174,10 @@ export default function Home() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden" style={{ background: '#060b18' }}>
-      {/* Top Header Bar */}
+      {/* Top Header */}
       <header className="flex-shrink-0 glass-panel flex items-center justify-between px-5 h-14 z-50">
         <div className="flex items-center gap-4">
+          {/* Logo & Title */}
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
@@ -122,334 +185,383 @@ export default function Home() {
               </svg>
             </div>
             <h1 className="text-sm font-bold tracking-wide text-white">
-              DHI National Infrastructure Command Center
+              DHI Data Lake
             </h1>
           </div>
 
-          <div className="relative ml-6 hidden md:block">
+          {/* Company Selector — Map + DHI Group (fixed) + company carousel */}
+          <div className="flex items-center gap-1 ml-4">
+            {/* Fixed tabs */}
+            <div className="flex items-center gap-1 bg-[#0c1425] rounded-lg p-1 border border-[#1a2744]">
+              <button
+                onClick={() => setActiveView('map')}
+                className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  activeView === 'map'
+                    ? 'bg-cyan-500/15 text-cyan-400 shadow-sm shadow-cyan-500/10'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z" />
+                    <path d="M8 2v16" /><path d="M16 6v16" />
+                  </svg>
+                  Map
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveView('dhi')}
+                className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  activeView === 'dhi'
+                    ? 'bg-cyan-500/15 text-cyan-400 shadow-sm shadow-cyan-500/10'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                  </svg>
+                  DHI &amp; Group
+                </span>
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-[#1a2744] mx-1" />
+
+            {/* Auto-scrolling company carousel */}
+            <div
+              className="relative overflow-hidden"
+              style={{ maxWidth: '520px', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}
+              onMouseEnter={() => setCarouselPaused(true)}
+              onMouseLeave={() => setCarouselPaused(false)}
+            >
+              <div
+                className="flex items-center gap-1"
+                style={{
+                  animation: 'marquee 50s linear infinite',
+                  animationPlayState: carouselPaused ? 'paused' : 'running',
+                  width: 'max-content',
+                }}
+              >
+                {[...orderedCompanies, ...orderedCompanies].map((company, i) => {
+                  const isActive = activeView === company.id
+                  const hasData = company.id === 'bt' || company.id === 'drukair'
+                  return (
+                    <button
+                      key={`${company.id}-${i}`}
+                      onClick={() => setActiveView(company.id)}
+                      className={`flex-shrink-0 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        isActive ? '' : 'text-slate-500 hover:text-slate-300'
+                      }`}
+                      style={isActive ? { background: `${company.sectorColor}22`, color: company.sectorColor, boxShadow: `0 0 8px ${company.sectorColor}20` } : {}}
+                    >
+                      <span className="flex items-center gap-1.5 whitespace-nowrap">
+                        <span
+                          className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold flex-shrink-0"
+                          style={{ background: `${company.sectorColor}25`, color: company.sectorColor }}
+                        >
+                          {company.shortName.charAt(0)}
+                        </span>
+                        {company.name}
+                        {hasData && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Company search — always visible */}
+          <div ref={searchRef} className="relative ml-2 hidden md:block">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
             </svg>
             <input
               type="text"
-              placeholder="Search infrastructure..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-72 pl-10 pr-4 py-2 rounded-lg text-sm bg-[#0c1425] border border-[#1a2744] text-slate-300 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
+              placeholder="Search company..."
+              value={companySearch}
+              onChange={(e) => setCompanySearch(e.target.value)}
+              className="w-52 pl-10 pr-4 py-2 rounded-lg text-sm bg-[#0c1425] border border-[#1a2744] text-slate-300 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <nav className="hidden lg:flex items-center gap-1 mr-4">
-            {tabs.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  activeTab === tab
-                    ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
-                    : 'text-slate-500 hover:text-slate-300 border border-transparent'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-2 text-xs">
-            <span className="flex items-center gap-1.5 text-green-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              LIVE
-            </span>
-          </div>
-
-          <button className="relative p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-[#0f1a2e] transition-colors">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
-          </button>
-
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold cursor-pointer ring-2 ring-transparent hover:ring-cyan-500/40 transition-all">
             DL
           </div>
         </div>
       </header>
 
+      {/* Search dropdown — outside header to escape backdrop-filter stacking context */}
+      {companySearch.trim() && searchResults.length > 0 && (
+        <div
+          className="fixed rounded-xl border border-[#1a2744] z-[99999] overflow-hidden shadow-2xl"
+          style={{ background: '#0c1425', top: dropdownPos.top, left: dropdownPos.left, width: 288 }}
+        >
+          {searchResults.map(company => (
+            <button
+              key={company.id}
+              onClick={() => { setActiveView(company.id); setCompanySearch('') }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+            >
+              <span
+                className="w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-[9px] font-bold"
+                style={{ background: `${company.sectorColor}20`, color: company.sectorColor }}
+              >
+                {company.shortName.charAt(0)}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium text-slate-200 truncate">{company.name}</div>
+                <div className="text-[10px] text-slate-600">{company.sector}</div>
+              </div>
+              {(company.id === 'bt' || company.id === 'drukair') && (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <aside className="flex-shrink-0 w-56 glass-panel border-r border-[#1a2744] flex flex-col z-40">
-          <div className="px-4 py-4">
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-3">Infrastructure Layers</h2>
-            <div className="space-y-1">
-              {Object.entries(categoryConfig).map(([key, config]) => {
-                const isActive = activeFilters.includes(key)
-                const count = infrastructureAssets.filter(a => a.type === key).length
-                return (
-                  <button
-                    key={key}
-                    onClick={() => toggleFilter(key)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all group ${
-                      isActive
-                        ? 'bg-white/[0.04]'
-                        : 'opacity-40 hover:opacity-70'
-                    }`}
-                  >
-                    <div className={`flex-shrink-0 transition-transform ${isActive ? 'scale-110' : 'scale-90'}`}>
-                      {config.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-medium text-slate-300 block truncate">{config.label}</span>
-                    </div>
-                    <span className="text-[10px] font-mono text-slate-600">{count}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="mt-auto px-4 py-4 border-t border-[#1a2744]">
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-3">System Status</h2>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">Total Assets</span>
-                <span className="text-xs font-mono text-cyan-400">{stats.total}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">Operational</span>
-                <span className="text-xs font-mono text-green-400">{stats.operational}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">Maintenance</span>
-                <span className="text-xs font-mono text-amber-400">{stats.maintenance}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">Offline</span>
-                <span className="text-xs font-mono text-red-400">{stats.offline}</span>
-              </div>
-              <div className="mt-2">
-                <div className="h-1.5 rounded-full bg-[#0c1425] overflow-hidden flex">
-                  <div className="bg-green-500 transition-all" style={{ width: `${(stats.operational / Math.max(stats.total, 1)) * 100}%` }} />
-                  <div className="bg-amber-500 transition-all" style={{ width: `${(stats.maintenance / Math.max(stats.total, 1)) * 100}%` }} />
-                  <div className="bg-red-500 transition-all" style={{ width: `${(stats.offline / Math.max(stats.total, 1)) * 100}%` }} />
+        {/* ===== MAP VIEW ===== */}
+        {activeView === 'map' && (
+          <>
+            {/* Left Sidebar */}
+            <aside className="flex-shrink-0 w-56 glass-panel border-r border-[#1a2744] flex flex-col z-40">
+              <div className="px-4 py-4">
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-3">Infrastructure Layers</h2>
+                <div className="space-y-1">
+                  {Object.entries(categoryConfig).map(([key, config]) => {
+                    const isActive = activeFilters.includes(key)
+                    const count = infrastructureAssets.filter(a => a.type === key).length
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => toggleFilter(key)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all group ${
+                          isActive ? 'bg-white/[0.04]' : 'opacity-40 hover:opacity-70'
+                        }`}
+                      >
+                        <div className={`flex-shrink-0 transition-transform ${isActive ? 'scale-110' : 'scale-90'}`}>
+                          {config.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-medium text-slate-300 block truncate">{config.label}</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-slate-600">{count}</span>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Legend */}
-          <div className="px-4 py-4 border-t border-[#1a2744]">
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-3">Legend</h2>
-            <div className="space-y-1.5">
-              {Object.entries(categoryConfig).map(([key, config]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-sm" style={{ background: config.color }} />
-                  <span className="text-[10px] text-slate-500">{config.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </aside>
+            </aside>
 
-        {/* Map Area */}
-        <main className="flex-1 relative">
-          <NetworkMap
-            onAssetClick={handleAssetClick}
-            selectedAsset={selectedAsset}
-            activeFilters={activeFilters}
-          />
+            {/* Map Area */}
+            <main className="flex-1 relative">
+              <NetworkMap
+                onAssetClick={handleAssetClick}
+                selectedAsset={selectedAsset}
+                activeFilters={activeFilters}
+              />
 
-          {/* Bottom Stats Overlay */}
-          <div className="absolute bottom-4 left-4 z-[1000] flex items-center gap-3">
-            <div className="glass-panel rounded-lg px-3 py-2 flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-400" />
-                <span className="text-[10px] text-slate-400">{stats.operational} Active</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
-                <span className="text-[10px] text-slate-400">{stats.maintenance} Maintenance</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-400" />
-                <span className="text-[10px] text-slate-400">{stats.offline} Offline</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Top-right quick actions */}
-          <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2">
-            <button
-              onClick={() => setActiveFilters(allTypes)}
-              className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-cyan-400 transition-colors"
-            >
-              Show All
-            </button>
-            <button
-              onClick={() => setActiveFilters([])}
-              className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-red-400 transition-colors"
-            >
-              Hide All
-            </button>
-          </div>
-        </main>
-
-        {/* Right Detail Panel */}
-        <aside className={`flex-shrink-0 glass-panel border-l border-[#1a2744] transition-all duration-300 overflow-y-auto overflow-x-hidden z-40 ${
-          detailOpen && selectedAsset ? 'w-80' : 'w-0'
-        }`}>
-          {selectedAsset && detailOpen && (
-            <div className="w-80 animate-fade-in-up">
-              <div className="px-5 py-4 border-b border-[#1a2744] flex items-start justify-between">
-                <div className="flex-1 min-w-0 pr-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2 h-2 rounded-full" style={{ background: categoryConfig[selectedAsset.type]?.color }} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: categoryConfig[selectedAsset.type]?.color }}>
-                      {selectedAsset.type}
-                    </span>
+              {/* Bottom Stats Overlay */}
+              <div className="absolute bottom-4 left-4 z-[1000] flex items-center gap-3">
+                <div className="glass-panel rounded-lg px-3 py-2 flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-[10px] text-slate-400">{stats.operational} Active</span>
                   </div>
-                  <h3 className="text-sm font-bold text-white leading-tight">{selectedAsset.name}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="text-[10px] text-slate-400">{stats.maintenance} Maintenance</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-red-400" />
+                    <span className="text-[10px] text-slate-400">{stats.offline} Offline</span>
+                  </div>
                 </div>
+              </div>
+
+              {/* Quick actions */}
+              <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2">
                 <button
-                  onClick={() => setDetailOpen(false)}
-                  className="p-1 rounded-md text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-colors flex-shrink-0"
+                  onClick={() => setActiveFilters(allTypes)}
+                  className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-cyan-400 transition-colors"
                 >
-                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Show All
+                </button>
+                <button
+                  onClick={() => setActiveFilters([])}
+                  className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-red-400 transition-colors"
+                >
+                  Hide All
                 </button>
               </div>
+            </main>
 
-              <div className="px-5 py-4 space-y-4">
-                {/* Status badge */}
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-500">Status</span>
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
-                    selectedAsset.status === 'operational' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                    selectedAsset.status === 'maintenance' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                    'bg-red-500/10 text-red-400 border border-red-500/20'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${
-                      selectedAsset.status === 'operational' ? 'bg-green-400' :
-                      selectedAsset.status === 'maintenance' ? 'bg-amber-400' : 'bg-red-400'
-                    }`} />
-                    {selectedAsset.status.charAt(0).toUpperCase() + selectedAsset.status.slice(1)}
-                  </span>
-                </div>
-
-                {/* Key metrics */}
-                {(selectedAsset.capacity || selectedAsset.output) && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {selectedAsset.capacity && (
-                      <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] p-3">
-                        <span className="text-[10px] text-slate-600 uppercase tracking-wider block mb-1">Capacity</span>
-                        <span className="text-sm font-bold text-white">{selectedAsset.capacity}</span>
+            {/* Right Detail Panel */}
+            <aside className={`flex-shrink-0 glass-panel border-l border-[#1a2744] transition-all duration-300 overflow-y-auto overflow-x-hidden z-40 ${
+              detailOpen && selectedAsset ? 'w-80' : 'w-0'
+            }`}>
+              {selectedAsset && detailOpen && (
+                <div className="w-80 animate-fade-in-up">
+                  <div className="px-5 py-4 border-b border-[#1a2744] flex items-start justify-between">
+                    <div className="flex-1 min-w-0 pr-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 rounded-full" style={{ background: categoryConfig[selectedAsset.type]?.color }} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: categoryConfig[selectedAsset.type]?.color }}>
+                          {selectedAsset.type}
+                        </span>
                       </div>
-                    )}
-                    {selectedAsset.output && (
-                      <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] p-3">
-                        <span className="text-[10px] text-slate-600 uppercase tracking-wider block mb-1">Output</span>
-                        <span className="text-sm font-bold text-white">{selectedAsset.output}</span>
-                      </div>
-                    )}
+                      <h3 className="text-sm font-bold text-white leading-tight">{selectedAsset.name}</h3>
+                    </div>
+                    <button
+                      onClick={() => setDetailOpen(false)}
+                      className="p-1 rounded-md text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-colors flex-shrink-0"
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                   </div>
-                )}
 
-                {/* Detail properties */}
-                {selectedAsset.details && (
-                  <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] overflow-hidden">
-                    <div className="px-3 py-2 border-b border-[#1a2744]">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Properties</span>
-                    </div>
-                    <div className="divide-y divide-[#1a2744]">
-                      {Object.entries(selectedAsset.details).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between px-3 py-2">
-                          <span className="text-xs text-slate-500">{key}</span>
-                          <span className="text-xs font-medium text-slate-300">{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Hydropower charts */}
-                {selectedAsset.type === 'hydropower' && (
-                  <>
-                    <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] p-4">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-3 block">Generation Output</span>
-                      <div className="flex items-end gap-1 h-16">
-                        {[65, 78, 92, 88, 95, 82, 70, 85, 90, 96, 88, 75].map((v, i) => (
-                          <div key={i} className="flex-1 rounded-t" style={{
-                            height: `${v}%`,
-                            background: `linear-gradient(to top, rgba(0,229,255,0.1), rgba(0,229,255,${v/100 * 0.6}))`,
-                            boxShadow: v > 90 ? '0 0 8px rgba(0,229,255,0.3)' : 'none',
-                          }} />
-                        ))}
-                      </div>
-                      <div className="flex justify-between mt-2">
-                        <span className="text-[9px] text-slate-600">Jan</span>
-                        <span className="text-[9px] text-slate-600">Dec</span>
-                      </div>
+                  <div className="px-5 py-4 space-y-4">
+                    {/* Status badge */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-slate-500">Status</span>
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+                        selectedAsset.status === 'operational' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                        selectedAsset.status === 'maintenance' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                        'bg-red-500/10 text-red-400 border border-red-500/20'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          selectedAsset.status === 'operational' ? 'bg-green-400' :
+                          selectedAsset.status === 'maintenance' ? 'bg-amber-400' : 'bg-red-400'
+                        }`} />
+                        {selectedAsset.status.charAt(0).toUpperCase() + selectedAsset.status.slice(1)}
+                      </span>
                     </div>
 
-                    <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] p-4">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-3 block">Power Distribution</span>
-                      <div className="space-y-2">
-                        {[
-                          { label: 'Domestic', value: 340, color: '#00e5ff' },
-                          { label: 'Export (India)', value: 510, color: '#d500f9' },
-                          { label: 'Industrial', value: 180, color: '#ffab00' },
-                        ].map((item) => (
-                          <div key={item.label}>
-                            <div className="flex justify-between text-[10px] mb-1">
-                              <span className="text-slate-500">{item.label}</span>
-                              <span className="text-slate-400">{item.value} GWh</span>
-                            </div>
-                            <div className="h-1.5 rounded-full bg-[#1a2744]">
-                              <div
-                                className="h-full rounded-full transition-all"
-                                style={{
-                                  width: `${(item.value / 510) * 100}%`,
-                                  background: item.color,
-                                  boxShadow: `0 0 8px ${item.color}40`,
-                                }}
-                              />
-                            </div>
+                    {/* Key metrics */}
+                    {(selectedAsset.capacity || selectedAsset.output) && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {selectedAsset.capacity && (
+                          <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] p-3">
+                            <span className="text-[10px] text-slate-600 uppercase tracking-wider block mb-1">Capacity</span>
+                            <span className="text-sm font-bold text-white">{selectedAsset.capacity}</span>
                           </div>
-                        ))}
+                        )}
+                        {selectedAsset.output && (
+                          <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] p-3">
+                            <span className="text-[10px] text-slate-600 uppercase tracking-wider block mb-1">Output</span>
+                            <span className="text-sm font-bold text-white">{selectedAsset.output}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </>
-                )}
+                    )}
 
-                {/* Telecom charts */}
-                {selectedAsset.type === 'telecom' && (
-                  <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] p-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-3 block">Network Load (24h)</span>
-                    <div className="flex items-end gap-0.5 h-12">
-                      {[30, 25, 20, 18, 15, 20, 35, 60, 85, 90, 88, 80, 75, 70, 72, 78, 85, 92, 95, 88, 70, 55, 45, 35].map((v, i) => (
-                        <div key={i} className="flex-1 rounded-t" style={{
-                          height: `${v}%`,
-                          background: v > 85 ? '#ff1744' : v > 70 ? '#ffab00' : '#00e676',
-                          opacity: 0.7,
-                        }} />
-                      ))}
-                    </div>
-                    <div className="flex justify-between mt-2">
-                      <span className="text-[9px] text-slate-600">00:00</span>
-                      <span className="text-[9px] text-slate-600">23:00</span>
+                    {/* Detail properties */}
+                    {selectedAsset.details && (
+                      <div className="rounded-lg bg-[#0c1425] border border-[#1a2744] overflow-hidden">
+                        <div className="px-3 py-2 border-b border-[#1a2744]">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Properties</span>
+                        </div>
+                        <div className="divide-y divide-[#1a2744]">
+                          {Object.entries(selectedAsset.details).map(([key, value]) => (
+                            <div key={key} className="flex items-center justify-between px-3 py-2">
+                              <span className="text-xs text-slate-500">{key}</span>
+                              <span className="text-xs font-medium text-slate-300">{value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Coordinates */}
+                    <div className="flex items-center gap-2 text-[10px] text-slate-600 pt-2 border-t border-[#1a2744]">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" /></svg>
+                      <span>{selectedAsset.position[0].toFixed(4)}°N, {selectedAsset.position[1].toFixed(4)}°E</span>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
+            </aside>
+          </>
+        )}
 
-                {/* Coordinates */}
-                <div className="flex items-center gap-2 text-[10px] text-slate-600 pt-2 border-t border-[#1a2744]">
-                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" /></svg>
-                  <span>{selectedAsset.position[0].toFixed(4)}°N, {selectedAsset.position[1].toFixed(4)}°E</span>
+        {/* ===== DHI GROUP VIEW ===== */}
+        {activeView === 'dhi' && <DHIGroupDashboard />}
+
+        {/* ===== BT DASHBOARD ===== */}
+        {activeView === 'bt' && <BTDashboard />}
+
+        {/* ===== DRUK AIR DASHBOARD ===== */}
+        {activeView === 'drukair' && <DrukAirDashboard />}
+
+        {/* ===== COMPANY - NO DATA YET ===== */}
+        {activeView !== 'map' && activeView !== 'dhi' && activeView !== 'bt' && activeView !== 'drukair' && (() => {
+          const company = dhiCompanies.find(c => c.id === activeView)
+          if (!company) return null
+          return (
+            <div className="flex-1 flex items-center justify-center overflow-hidden">
+              <div className="text-center max-w-md px-6">
+                <div
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold"
+                  style={{ background: `linear-gradient(135deg, ${company.sectorColor}33, ${company.sectorColor}11)`, border: `1px solid ${company.sectorColor}30` }}
+                >
+                  {company.shortName.slice(0, 2)}
+                </div>
+                <h2 className="text-xl font-bold text-white mb-1">{company.name}</h2>
+                <p className="text-sm text-slate-500 mb-2">{company.sector}</p>
+                <div
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-6"
+                  style={{ background: `${company.sectorColor}15`, color: company.sectorColor }}
+                >
+                  {company.status}
+                </div>
+                <div className="glass-panel rounded-xl p-6 border border-[#1a2744] text-left mb-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                      <svg width="16" height="16" fill="none" stroke="#ffab00" viewBox="0 0 24 24" strokeWidth="2">
+                        <path d="M12 2a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1V6a4 4 0 0 1 4-4z" />
+                        <path d="M12 14v3" /><circle cx="12" cy="12" r="1" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">Data Not Yet Available</p>
+                      <p className="text-[10px] text-slate-500">Pending data lake integration</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">{company.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-left">
+                  <div className="glass-panel rounded-lg p-3 border border-[#1a2744]">
+                    <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-1">Established</p>
+                    <p className="text-sm font-mono text-slate-300">{company.established}</p>
+                  </div>
+                  <div className="glass-panel rounded-lg p-3 border border-[#1a2744]">
+                    <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-1">DHI Ownership</p>
+                    <p className="text-sm font-mono text-slate-300">{company.ownership}%</p>
+                  </div>
+                  <div className="glass-panel rounded-lg p-3 border border-[#1a2744]">
+                    <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-1">Employees</p>
+                    <p className="text-sm font-mono text-slate-300">{company.employees.toLocaleString()}</p>
+                  </div>
+                  <div className="glass-panel rounded-lg p-3 border border-[#1a2744]">
+                    <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-1">Revenue (Est.)</p>
+                    <p className="text-sm font-mono" style={{ color: company.sectorColor }}>Nu. {company.annualRevenue}M</p>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
-        </aside>
+          )
+        })()}
       </div>
     </div>
   )

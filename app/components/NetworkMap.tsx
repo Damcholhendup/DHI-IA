@@ -1,10 +1,25 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import { useState } from 'react'
 import type { InfraAsset } from '../data/infrastructure'
 import { infrastructureAssets, typeColors } from '../data/infrastructure'
+import { routePerformance } from '../data/drukair-data'
+
+// Destination airport coordinates for flight route lines
+const destinationCoords: Record<string, [number, number]> = {
+  'Delhi':     [28.5562, 77.1000],
+  'Bangkok':   [13.6900, 100.7501],
+  'Kathmandu': [27.6966, 85.3591],
+  'Kolkata':   [22.6520, 88.4463],
+  'Dhaka':     [23.8432, 90.3984],
+  'Singapore': [1.3644,  103.9915],
+  'Guwahati':  [26.1061, 91.5859],
+  'Mumbai':    [19.0896, 72.8656],
+  'Bumthang':  [27.562,  90.747],
+}
 
 export type { InfraAsset }
 
@@ -48,24 +63,76 @@ interface NetworkMapProps {
   activeFilters: string[]
 }
 
+function ResetViewControl({ bounds }: { bounds: [[number, number], [number, number]] }) {
+  const map = useMap()
+  return (
+    <button
+      onClick={() => map.flyToBounds(bounds, { padding: [10, 10], duration: 0.8 })}
+      title="Reset map view"
+      className="absolute z-[1000] flex items-center gap-1.5 glass-panel rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-slate-400 hover:text-cyan-400 transition-colors"
+      style={{ top: '80px', left: '10px' }}
+    >
+      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+        <path d="M3 3v5h5" />
+      </svg>
+      Reset View
+    </button>
+  )
+}
+
 export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters }: NetworkMapProps) {
-  const center: [number, number] = [27.4, 90.4]
+  const [selectedAirport, setSelectedAirport] = useState<InfraAsset | null>(null)
+
   const bhutanBounds: [[number, number], [number, number]] = [
-    [26.5, 88.5],
-    [28.5, 92.3]
+    [26.7, 88.75],
+    [28.35, 92.15]
   ]
 
   const filteredAssets = infrastructureAssets.filter(a => activeFilters.includes(a.type))
 
+  const handleAssetClick = (asset: InfraAsset) => {
+    onAssetClick(asset)
+    if (asset.type === 'airline') {
+      setSelectedAirport(prev => prev?.id === asset.id ? null : asset)
+    } else {
+      setSelectedAirport(null)
+    }
+  }
+
+  // Get routes for the selected airport (Paro = international routes, others = just Paro connection)
+  const activeRoutes = selectedAirport ? (() => {
+    const airportName = selectedAirport.name
+    if (airportName.includes('Paro')) {
+      return routePerformance.map(r => ({
+        dest: r.destination,
+        destPos: destinationCoords[r.destination],
+        originPos: selectedAirport.position,
+        frequency: r.frequency,
+        label: r.destination,
+      })).filter(r => r.destPos)
+    }
+    // Domestic airports: show route back to Paro
+    const paroAirport = infrastructureAssets.find(a => a.name.includes('Paro') && a.type === 'airline')
+    if (paroAirport) {
+      return [{
+        dest: 'Paro',
+        destPos: paroAirport.position,
+        originPos: selectedAirport.position,
+        frequency: '3x/week',
+        label: 'Paro',
+      }]
+    }
+    return []
+  })() : []
+
   return (
     <div className="w-full h-full relative">
       <MapContainer
-        center={center}
-        zoom={8}
-        minZoom={7}
+        bounds={bhutanBounds}
+        boundsOptions={{ padding: [10, 10] }}
+        minZoom={3}
         maxZoom={14}
-        maxBounds={bhutanBounds}
-        maxBoundsViscosity={1.0}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
         zoomControl={true}
@@ -73,6 +140,8 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
+
+        <ResetViewControl bounds={bhutanBounds} />
 
         {/* Transmission lines */}
         {activeFilters.includes('hydropower') && transmissionLines.map((line, i) => (
@@ -111,7 +180,7 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
             position={asset.position}
             icon={makeIcon(asset.type)}
             eventHandlers={{
-              click: () => onAssetClick(asset),
+              click: () => handleAssetClick(asset),
             }}
           >
             <Popup>
@@ -137,7 +206,66 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
             </Popup>
           </Marker>
         ))}
+
+        {/* Flight route lines when an airport is selected */}
+        {activeRoutes.map((route, i) => (
+          <Polyline
+            key={`route-${i}`}
+            positions={[route.originPos, route.destPos]}
+            pathOptions={{
+              color: '#ffab00',
+              weight: 1.5,
+              opacity: 0.6,
+              dashArray: '8 6',
+            }}
+          />
+        ))}
+
+        {/* Destination markers for active routes */}
+        {activeRoutes.map((route, i) => (
+          <CircleMarker
+            key={`dest-${i}`}
+            center={route.destPos}
+            radius={5}
+            pathOptions={{
+              color: '#ffab00',
+              fillColor: '#ffab00',
+              fillOpacity: 0.8,
+              weight: 1.5,
+            }}
+          >
+            <Popup>
+              <div className="min-w-[140px]">
+                <h3 className="font-bold text-sm text-white mb-1">{route.label}</h3>
+                <p className="text-xs text-slate-400">Frequency: {route.frequency}</p>
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
       </MapContainer>
+
+      {/* Route legend when airport is selected */}
+      {selectedAirport && activeRoutes.length > 0 && (
+        <div className="absolute bottom-4 right-4 z-[1000] glass-panel rounded-lg p-3 max-w-[220px]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
+              Routes from {selectedAirport.name.replace(/ (International |Domestic |Mindfulness City )?Airport/, '')}
+            </span>
+            <button onClick={() => setSelectedAirport(null)} className="text-slate-600 hover:text-slate-300 ml-2">
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <div className="space-y-1">
+            {activeRoutes.map((route, i) => (
+              <div key={i} className="flex items-center gap-2 text-[11px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                <span className="text-slate-300">{route.label}</span>
+                <span className="text-slate-600 ml-auto text-[10px]">{route.frequency}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

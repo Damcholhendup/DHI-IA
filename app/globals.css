@@ -47,6 +47,12 @@ body {
   background: #2a3a5c;
 }
 
+/* Marquee animation for company carousel */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* Map container overrides */
 .leaflet-container {
   background: var(--bg-primary) !important;
@@ -162,4 +168,26 @@ body {
 }
 .leaflet-popup-close-button:hover {
   color: var(--accent-cyan) !important;
+}
+
+/* Recharts tooltip overrides */
+.recharts-tooltip-wrapper {
+  z-index: 1000 !important;
+}
+.recharts-default-tooltip {
+  background: rgba(12, 20, 37, 0.95) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+}
+.recharts-legend-item-text {
+  color: var(--text-secondary) !important;
+}
+.recharts-cartesian-axis-tick-value {
+  fill: var(--text-secondary) !important;
+}
+
+/* Dashboard scroll area */
+.dashboard-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
 }
