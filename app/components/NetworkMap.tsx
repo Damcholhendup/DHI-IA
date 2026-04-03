@@ -63,11 +63,11 @@ interface NetworkMapProps {
   activeFilters: string[]
 }
 
-function ResetViewControl({ bounds }: { bounds: [[number, number], [number, number]] }) {
+function ResetViewControl() {
   const map = useMap()
   return (
     <button
-      onClick={() => map.flyToBounds(bounds, { padding: [10, 10], duration: 0.8 })}
+      onClick={() => map.flyTo([27.5, 90.4], 9, { duration: 0.8 })}
       title="Reset map view"
       className="absolute z-[1000] flex items-center gap-1.5 glass-panel rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-slate-400 hover:text-cyan-400 transition-colors"
       style={{ top: '80px', left: '10px' }}
@@ -129,8 +129,8 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
   return (
     <div className="w-full h-full relative">
       <MapContainer
-        bounds={bhutanBounds}
-        boundsOptions={{ padding: [10, 10] }}
+        center={[27.5, 90.4]}
+        zoom={9}
         minZoom={3}
         maxZoom={14}
         style={{ height: '100%', width: '100%' }}
@@ -141,7 +141,7 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
 
-        <ResetViewControl bounds={bhutanBounds} />
+        <ResetViewControl />
 
         {/* Transmission lines */}
         {activeFilters.includes('hydropower') && transmissionLines.map((line, i) => (

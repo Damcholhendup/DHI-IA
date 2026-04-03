@@ -12,8 +12,8 @@ const NetworkMap = dynamic(() => import('./components/NetworkMap'), {
     <div className="w-full h-full flex items-center justify-center">
       <div className="text-center">
         <div className="relative w-16 h-16 mx-auto mb-4">
-          <div className="absolute inset-0 rounded-full border-2 border-cyan-500/20" />
-          <div className="absolute inset-0 rounded-full border-t-2 border-cyan-400 animate-spin" />
+          <div className="absolute inset-0 rounded-full border-2 border-dhi-500/20" />
+          <div className="absolute inset-0 rounded-full border-t-2 border-dhi-400 animate-spin" />
           <div className="absolute inset-2 rounded-full border-t-2 border-purple-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
         </div>
         <p className="text-sm text-slate-500 tracking-widest uppercase">Loading Map...</p>
@@ -42,7 +42,7 @@ function DashboardLoader({ label }: { label: string }) {
     <div className="w-full h-full flex items-center justify-center">
       <div className="text-center">
         <div className="relative w-12 h-12 mx-auto mb-3">
-          <div className="absolute inset-0 rounded-full border-t-2 border-cyan-400 animate-spin" />
+          <div className="absolute inset-0 rounded-full border-t-2 border-dhi-400 animate-spin" />
         </div>
         <p className="text-sm text-slate-500 tracking-widest uppercase">Loading {label} Data...</p>
       </div>
@@ -179,13 +179,11 @@ export default function Home() {
         <div className="flex items-center gap-4">
           {/* Logo & Title */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
+            <div className="h-8 px-2 rounded-lg bg-white flex items-center justify-center shadow-sm">
+              <img src="/images/logos/dhi-logo.webp" alt="DHI" className="h-5 w-auto" />
             </div>
             <h1 className="text-sm font-bold tracking-wide text-white">
-              DHI Data Lake
+              Data Lake
             </h1>
           </div>
 
@@ -197,7 +195,7 @@ export default function Home() {
                 onClick={() => setActiveView('map')}
                 className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                   activeView === 'map'
-                    ? 'bg-cyan-500/15 text-cyan-400 shadow-sm shadow-cyan-500/10'
+                    ? 'bg-dhi-500/15 text-dhi-400 shadow-sm shadow-dhi-500/10'
                     : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
@@ -213,7 +211,7 @@ export default function Home() {
                 onClick={() => setActiveView('dhi')}
                 className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                   activeView === 'dhi'
-                    ? 'bg-cyan-500/15 text-cyan-400 shadow-sm shadow-cyan-500/10'
+                    ? 'bg-dhi-500/15 text-dhi-400 shadow-sm shadow-dhi-500/10'
                     : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
@@ -260,12 +258,22 @@ export default function Home() {
                       style={isActive ? { background: `${company.sectorColor}22`, color: company.sectorColor, boxShadow: `0 0 8px ${company.sectorColor}20` } : {}}
                     >
                       <span className="flex items-center gap-1.5 whitespace-nowrap">
-                        <span
-                          className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold flex-shrink-0"
-                          style={{ background: `${company.sectorColor}25`, color: company.sectorColor }}
-                        >
-                          {company.shortName.charAt(0)}
-                        </span>
+                        {company.id === 'bt' || company.id === 'drukair' ? (
+                          <span className="w-5 h-5 rounded flex-shrink-0 bg-white flex items-center justify-center overflow-hidden p-0.5">
+                            <img
+                              src={company.id === 'bt' ? '/images/logos/BT.jpeg' : '/images/logos/Drukair.png'}
+                              alt={company.shortName}
+                              className="w-full h-full object-contain"
+                            />
+                          </span>
+                        ) : (
+                          <span
+                            className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold flex-shrink-0"
+                            style={{ background: `${company.sectorColor}25`, color: company.sectorColor }}
+                          >
+                            {company.shortName.charAt(0)}
+                          </span>
+                        )}
                         {company.name}
                         {hasData && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
                       </span>
@@ -286,13 +294,13 @@ export default function Home() {
               placeholder="Search company..."
               value={companySearch}
               onChange={(e) => setCompanySearch(e.target.value)}
-              className="w-52 pl-10 pr-4 py-2 rounded-lg text-sm bg-[#0c1425] border border-[#1a2744] text-slate-300 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
+              className="w-52 pl-10 pr-4 py-2 rounded-lg text-sm bg-[#0c1425] border border-[#1a2744] text-slate-300 placeholder-slate-600 focus:outline-none focus:border-dhi-500/50 focus:ring-1 focus:ring-dhi-500/20 transition-all"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold cursor-pointer ring-2 ring-transparent hover:ring-cyan-500/40 transition-all">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold cursor-pointer ring-2 ring-transparent hover:ring-dhi-500/40 transition-all">
             DL
           </div>
         </div>
@@ -310,12 +318,22 @@ export default function Home() {
               onClick={() => { setActiveView(company.id); setCompanySearch('') }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
             >
-              <span
-                className="w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-[9px] font-bold"
-                style={{ background: `${company.sectorColor}20`, color: company.sectorColor }}
-              >
-                {company.shortName.charAt(0)}
-              </span>
+              {company.id === 'bt' || company.id === 'drukair' ? (
+                <span className="w-6 h-6 rounded flex-shrink-0 bg-white flex items-center justify-center overflow-hidden p-0.5">
+                  <img
+                    src={company.id === 'bt' ? '/images/logos/BT.jpeg' : '/images/logos/Drukair.png'}
+                    alt={company.shortName}
+                    className="w-full h-full object-contain"
+                  />
+                </span>
+              ) : (
+                <span
+                  className="w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-[9px] font-bold"
+                  style={{ background: `${company.sectorColor}20`, color: company.sectorColor }}
+                >
+                  {company.shortName.charAt(0)}
+                </span>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium text-slate-200 truncate">{company.name}</div>
                 <div className="text-[10px] text-slate-600">{company.sector}</div>
@@ -394,7 +412,7 @@ export default function Home() {
               <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2">
                 <button
                   onClick={() => setActiveFilters(allTypes)}
-                  className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-cyan-400 transition-colors"
+                  className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-dhi-400 transition-colors"
                 >
                   Show All
                 </button>
