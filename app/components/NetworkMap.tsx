@@ -31,6 +31,9 @@ const typeIcons: Record<string, string> = {
   solar: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#ffd600" fill-opacity="0.15" stroke="#ffd600" stroke-width="1.5"/><circle cx="14" cy="14" r="4" fill="#ffd600" fill-opacity="0.6"/><line x1="14" y1="4" x2="14" y2="8" stroke="#ffd600" stroke-width="1.5"/><line x1="14" y1="20" x2="14" y2="24" stroke="#ffd600" stroke-width="1.5"/><line x1="4" y1="14" x2="8" y2="14" stroke="#ffd600" stroke-width="1.5"/><line x1="20" y1="14" x2="24" y2="14" stroke="#ffd600" stroke-width="1.5"/></svg>`,
   substation: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="6" y="6" width="16" height="16" rx="2" fill="#d500f9" fill-opacity="0.15" stroke="#d500f9" stroke-width="1.5"/><circle cx="14" cy="14" r="4" stroke="#d500f9" stroke-width="1.5"/><path d="M14 10v8M10 14h8" stroke="#d500f9" stroke-width="1.5"/></svg>`,
   wind: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#00bfa5" fill-opacity="0.15" stroke="#00bfa5" stroke-width="1.5"/><path d="M14 8v12M14 14l-5-3M14 14l5-3M14 14l-5 3M14 14l5 3" stroke="#00bfa5" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  financial: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#2979ff" fill-opacity="0.15" stroke="#2979ff" stroke-width="1.5"/><rect x="8" y="11" width="12" height="9" rx="1.5" stroke="#2979ff" stroke-width="1.5"/><path d="M11 11V9a3 3 0 0 1 6 0v2" stroke="#2979ff" stroke-width="1.5" stroke-linecap="round"/><path d="M14 15v2" stroke="#2979ff" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  tech: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#00e5ff" fill-opacity="0.15" stroke="#00e5ff" stroke-width="1.5"/><rect x="7" y="9" width="14" height="9" rx="1.5" stroke="#00e5ff" stroke-width="1.5"/><path d="M11 21h6M14 18v3" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  industrial: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" fill="#ff6d00" fill-opacity="0.15" stroke="#ff6d00" stroke-width="1.5"/><path d="M7 21V13l4-3v3l4-3v3l4-3v9H7z" stroke="#ff6d00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
 }
 
 function makeIcon(type: string) {
@@ -45,29 +48,17 @@ function makeIcon(type: string) {
   })
 }
 
-// Transmission lines connecting substations to power plants
-const transmissionLines: Array<{ from: [number, number]; to: [number, number]; type: 'high' | 'medium' }> = [
-  { from: [27.45, 90.08], to: [27.03, 90.12], type: 'high' },
-  { from: [27.09, 89.56], to: [27.44, 89.68], type: 'high' },
-  { from: [27.07, 89.55], to: [27.44, 89.68], type: 'high' },
-  { from: [27.44, 89.68], to: [27.03, 90.12], type: 'medium' },
-  { from: [27.03, 90.12], to: [26.86, 90.47], type: 'high' },
-  { from: [27.57, 91.12], to: [27.03, 90.12], type: 'medium' },
-  { from: [27.48, 89.91], to: [27.44, 89.68], type: 'medium' },
-  { from: [26.87, 90.49], to: [26.86, 90.47], type: 'medium' },
-]
-
 interface NetworkMapProps {
   onAssetClick: (asset: InfraAsset) => void
   selectedAsset: InfraAsset | null
   activeFilters: string[]
 }
 
-function ResetViewControl() {
+function ResetViewControl({ bounds }: { bounds: [[number, number], [number, number]] }) {
   const map = useMap()
   return (
     <button
-      onClick={() => map.flyTo([27.5, 90.4], 9, { duration: 0.8 })}
+      onClick={() => map.flyToBounds(bounds, { padding: [10, 10], duration: 0.8 })}
       title="Reset map view"
       className="absolute z-[1000] flex items-center gap-1.5 glass-panel rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-slate-400 hover:text-cyan-400 transition-colors"
       style={{ top: '80px', left: '10px' }}
@@ -129,8 +120,8 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
   return (
     <div className="w-full h-full relative">
       <MapContainer
-        center={[27.5, 90.4]}
-        zoom={9}
+        bounds={bhutanBounds}
+        boundsOptions={{ padding: [10, 10] }}
         minZoom={3}
         maxZoom={14}
         style={{ height: '100%', width: '100%' }}
@@ -141,21 +132,7 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
 
-        <ResetViewControl />
-
-        {/* Transmission lines */}
-        {activeFilters.includes('hydropower') && transmissionLines.map((line, i) => (
-          <Polyline
-            key={`line-${i}`}
-            positions={[line.from, line.to]}
-            pathOptions={{
-              color: line.type === 'high' ? '#00e5ff' : '#d500f9',
-              weight: line.type === 'high' ? 1.5 : 1,
-              opacity: 0.25,
-              dashArray: line.type === 'medium' ? '6 4' : undefined,
-            }}
-          />
-        ))}
+        <ResetViewControl bounds={bhutanBounds} />
 
         {/* Telecom coverage dots */}
         {filteredAssets.filter(a => a.type === 'telecom').map((asset) => (
@@ -184,23 +161,88 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
             }}
           >
             <Popup>
-              <div className="min-w-[180px]">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full" style={{ background: typeColors[asset.type] }} />
-                  <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: typeColors[asset.type] }}>
-                    {asset.type}
-                  </span>
-                </div>
-                <h3 className="font-bold text-sm text-white mb-1">{asset.name}</h3>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${
-                    asset.status === 'operational' ? 'bg-green-400' : 
-                    asset.status === 'maintenance' ? 'bg-amber-400' : 'bg-red-400'
-                  }`} />
-                  <span className="text-slate-400 capitalize">{asset.status}</span>
-                </div>
-                {asset.capacity && (
-                  <p className="text-xs text-slate-400 mt-1">Capacity: {asset.capacity}</p>
+              <div className="min-w-[200px]">
+                {asset.type === 'hydropower' ? (
+                  <>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 rounded-full" style={{ background: typeColors[asset.type] }} />
+                      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: typeColors[asset.type] }}>
+                        Hydropower
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-sm text-white mb-2">{asset.name}</h3>
+                    <div className="flex items-center gap-2 text-xs mb-2">
+                      <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                        asset.status === 'operational' ? 'bg-green-400' :
+                        asset.status === 'maintenance' ? 'bg-amber-400' : 'bg-red-400'
+                      }`} />
+                      <span className="text-slate-400 capitalize">{asset.status.replace('_', ' ')}</span>
+                    </div>
+                    <div className="space-y-1 text-xs border-t border-slate-700 pt-2">
+                      {asset.capacity && (
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Installed Capacity</span>
+                          <span className="text-slate-200 font-medium">{asset.capacity}</span>
+                        </div>
+                      )}
+                      {asset.output && (
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Annual Output</span>
+                          <span className="text-slate-200 font-medium">{asset.output}</span>
+                        </div>
+                      )}
+                      {asset.details?.River && (
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">River</span>
+                          <span className="text-slate-200">{asset.details.River}</span>
+                        </div>
+                      )}
+                      {asset.details?.Type && (
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Type</span>
+                          <span className="text-slate-200">{asset.details.Type}</span>
+                        </div>
+                      )}
+                      {asset.details?.District && (
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">District</span>
+                          <span className="text-slate-200">{asset.details.District}</span>
+                        </div>
+                      )}
+                      {asset.details?.Commissioned && (
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Commissioned</span>
+                          <span className="text-slate-200">{asset.details.Commissioned}</span>
+                        </div>
+                      )}
+                      {asset.details?.Company && (
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Operator</span>
+                          <span className="text-slate-200">{asset.details.Company}</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 rounded-full" style={{ background: typeColors[asset.type] }} />
+                      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: typeColors[asset.type] }}>
+                        {asset.type}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-sm text-white mb-1">{asset.name}</h3>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                        asset.status === 'operational' ? 'bg-green-400' :
+                        asset.status === 'maintenance' ? 'bg-amber-400' : 'bg-red-400'
+                      }`} />
+                      <span className="text-slate-400 capitalize">{asset.status.replace('_', ' ')}</span>
+                    </div>
+                    {asset.capacity && (
+                      <p className="text-xs text-slate-400 mt-1">Capacity: {asset.capacity}</p>
+                    )}
+                  </>
                 )}
               </div>
             </Popup>
