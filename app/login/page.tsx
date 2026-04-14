@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { authenticateUser, createSession, getSession } from '../lib/auth'
 import { useAuth } from '../contexts/AuthContext'
 
+import Image from 'next/image'
+
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -67,13 +69,15 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm mx-4 z-10">
         {/* Logo + title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-700 mb-4 shadow-lg shadow-cyan-500/20">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-            </svg>
-          </div>
-          <h1 className="text-xl font-bold text-white tracking-tight">DHI Intelligence</h1>
-          <p className="text-xs text-slate-500 mt-1 tracking-widest uppercase">Data Lake Platform</p>
+          <Image
+            src="/images/logos/DHI.webp"
+            alt="DHI Logo"
+            width={56}
+            height={56}
+            className="rounded-2xl mx-auto mb-4 shadow-lg shadow-cyan-500/10"
+          />
+          <h1 className="text-xl font-bold text-white tracking-tight">DHI Data Lake</h1>
+          <p className="text-xs text-slate-500 mt-1 tracking-widest uppercase">Intelligence Platform</p>
         </div>
 
         {/* Form card */}
@@ -178,7 +182,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-[11px] text-slate-700 mt-6">
-          Druk Holding &amp; Investments · Intelligence Architecture
+          Druk Holding &amp; Investments · DHI Data Lake
         </p>
       </div>
     </div>

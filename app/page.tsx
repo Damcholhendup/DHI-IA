@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 
 const features = [
   {
@@ -102,13 +103,14 @@ export default function LandingPage() {
         style={{ background: 'rgba(6,11,24,0.85)', backdropFilter: 'blur(20px)' }}
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-            </svg>
-          </div>
-          <span className="text-sm font-bold text-white tracking-tight">DHI Intelligence</span>
-          <span className="hidden sm:inline text-[10px] text-slate-600 uppercase tracking-widest ml-1">Architecture</span>
+          <Image
+            src="/images/logos/DHI.webp"
+            alt="DHI Logo"
+            width={32}
+            height={32}
+            className="rounded-lg"
+          />
+          <span className="text-sm font-bold text-white tracking-tight">DHI Data Lake</span>
         </div>
         <Link
           href="/login"
@@ -129,8 +131,19 @@ export default function LandingPage() {
           Pilot Programme · 2026
         </div>
 
+        {/* DHI Logo large */}
+        <div className="mb-6">
+          <Image
+            src="/images/logos/DHI.webp"
+            alt="DHI Logo"
+            width={72}
+            height={72}
+            className="rounded-2xl mx-auto shadow-lg shadow-cyan-500/10"
+          />
+        </div>
+
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white max-w-3xl leading-tight mb-5">
-          DHI Intelligence{' '}
+          DHI{' '}
           <span
             style={{
               background: 'linear-gradient(90deg, #00e5ff, #448aff)',
@@ -138,14 +151,14 @@ export default function LandingPage() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            Architecture
+            Data Lake
           </span>
         </h1>
 
-        <p className="text-slate-400 text-base max-w-xl leading-relaxed mb-10">
-          A unified data intelligence platform for Druk Holding &amp; Investments — bringing
-          real-time analytics, infrastructure visibility, and AI-powered insights to
-          Bhutan&apos;s national enterprises.
+        <p className="text-slate-400 text-base max-w-2xl leading-relaxed mb-10">
+          A unified data intelligence platform for Druk Holding &amp; Investments — bringing together
+          fragmented business data from multiple sources into a single, intelligent system that enables
+          real-time analytics, AI-driven insights, and data-driven decision-making across Bhutan&apos;s national enterprises.
         </p>
 
         <div className="flex flex-wrap gap-3 justify-center">
@@ -166,6 +179,68 @@ export default function LandingPage() {
           >
             Learn More
           </a>
+        </div>
+      </section>
+
+      {/* ── Problem & Solution ── */}
+      <section className="px-6 pb-20">
+        <div className="max-w-5xl mx-auto">
+          {/* Problem */}
+          <div
+            className="rounded-2xl border border-red-500/15 p-8 mb-5 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, rgba(255,23,68,0.04), rgba(12,20,37,0.9))' }}
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'rgba(255,23,68,0.1)', border: '1px solid rgba(255,23,68,0.2)' }}>
+                <svg width="18" height="18" fill="none" stroke="#ff1744" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white mb-2">The Problem</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  Companies in Bhutan store their business data — financial records, sales figures, and performance metrics — across
+                  different systems and locations, making it difficult to see the bigger picture or make informed decisions.
+                  Analysing this data manually is slow, error-prone, and often misses critical patterns.
+                  Without a unified solution, organisations are unable to forecast where they are headed, financial risks go undetected,
+                  and growth is left to guesswork rather than data-driven prediction.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Solution */}
+          <div
+            className="rounded-2xl border border-cyan-500/15 p-8 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.04), rgba(12,20,37,0.9))' }}
+          >
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.2)' }}>
+                <svg width="18" height="18" fill="none" stroke="#00e5ff" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white mb-2">Our Solution</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  A smart analytics platform that brings all data together in one place, analyses it automatically, and presents
+                  clear insights through an easy-to-use dashboard — turning days of manual work into minutes.
+                </p>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {[
+                { color: '#00e5ff', title: 'Data Lake', desc: 'Central storage bringing together data from all DHI subsidiaries and external vendors into one accessible system.' },
+                { color: '#00e676', title: 'AI Analytics', desc: 'Intelligent system that automatically analyses data, identifies trends, and generates insights without manual effort.' },
+                { color: '#ffab00', title: 'Dashboard', desc: 'Simple web interface where leaders can view reports, charts, and predictions in an easy-to-understand format.' },
+              ].map(s => (
+                <div key={s.title} className="rounded-xl p-4 border" style={{ background: `${s.color}08`, borderColor: `${s.color}20` }}>
+                  <div className="text-xs font-bold mb-1.5" style={{ color: s.color }}>{s.title}</div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -286,7 +361,7 @@ export default function LandingPage() {
           />
           <h2 className="text-2xl font-bold text-white mb-3 relative">Ready to get started?</h2>
           <p className="text-sm text-slate-500 mb-8 relative">
-            Sign in with your credentials to access the DHI Intelligence platform. Contact your system
+            Sign in with your credentials to access the DHI Data Lake platform. Contact your system
             administrator if you need an account.
           </p>
           <Link
@@ -308,12 +383,8 @@ export default function LandingPage() {
       {/* ── Footer ── */}
       <footer className="border-t border-[#1a2744] px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-            </svg>
-          </div>
-          <span className="text-xs text-slate-600">DHI Intelligence Architecture · Pilot 2026</span>
+          <Image src="/images/logos/DHI.webp" alt="DHI" width={20} height={20} className="rounded" />
+          <span className="text-xs text-slate-600">DHI Data Lake · Pilot 2026</span>
         </div>
         <span className="text-xs text-slate-700">Druk Holding &amp; Investments · Royal Government of Bhutan</span>
       </footer>

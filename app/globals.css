@@ -8,14 +8,14 @@
   --bg-card: #0f1a2e;
   --bg-card-hover: #132240;
   --border-color: #1a2744;
-  --accent-cyan: #2878C4;
+  --accent-cyan: #00e5ff;
   --accent-amber: #ffab00;
   --accent-green: #00e676;
   --accent-red: #ff1744;
   --accent-purple: #d500f9;
   --text-primary: #e8edf5;
   --text-secondary: #7a8baa;
-  --glow-cyan: 0 0 20px rgba(40, 120, 196, 0.3);
+  --glow-cyan: 0 0 20px rgba(0, 229, 255, 0.3);
   --glow-amber: 0 0 20px rgba(255, 171, 0, 0.3);
 }
 
@@ -29,7 +29,6 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow: hidden;
 }
 
 /* Scrollbar */
@@ -154,14 +153,14 @@ body {
 .leaflet-popup-content-wrapper {
   background: rgba(12, 20, 37, 0.95) !important;
   backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(40, 120, 196, 0.3) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
   border-radius: 12px !important;
-  box-shadow: 0 0 30px rgba(40, 120, 196, 0.15) !important;
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.1) !important;
   color: var(--text-primary) !important;
 }
 .leaflet-popup-tip {
   background: rgba(12, 20, 37, 0.95) !important;
-  border: 1px solid rgba(40, 120, 196, 0.3) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
 }
 .leaflet-popup-close-button {
   color: var(--text-secondary) !important;
