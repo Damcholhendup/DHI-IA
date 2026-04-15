@@ -8,6 +8,7 @@ import { infrastructureAssets } from '../data/infrastructure'
 import { dhiCompanies } from '../data/dhi-group-data'
 import { useAuth } from '../contexts/AuthContext'
 import { canAccessCompany } from '../lib/auth'
+import Image from 'next/image'
 
 const NetworkMap = dynamic(() => import('../components/NetworkMap'), {
   ssr: false,
@@ -97,6 +98,23 @@ export default function Home() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [companySearch, setCompanySearch] = useState('')
   const [carouselPaused, setCarouselPaused] = useState(false)
+  const companyLogos: Record<string, string> = {
+    bt: '/images/logos/Bhutan Telecom.webp',
+    drukair: '/images/logos/Drukair.webp',
+    dgpc: '/images/logos/Druk Green power Corporation.webp',
+    bpc: '/images/logos/Bhutan Power Corporation.webp',
+    nrdc: '/images/logos/NRDCL.webp',
+    smc: '/images/logos/state mining.webp',
+    cdcl: '/images/logos/CDCL.webp',
+    ttp: '/images/logos/thimphu tech park.webp',
+    stcb: '/images/logos/STCBL.webp',
+    dpl: '/images/logos/Dungsam polymers Limited.webp',
+    abhl: '/images/logos/Azista Bhutan Healthcare.webp',
+    kil: '/images/logos/Koufuku.webp',
+    bbpl: '/images/logos/BPL.webp',
+    dcl: '/images/logos/dungsam cement.webp',
+  }
+
   const searchRef = useRef<HTMLDivElement>(null)
   const [dropdownPos, setDropdownPos] = useState({ top: 60, left: 0 })
 
@@ -160,10 +178,8 @@ export default function Home() {
         <div className="flex items-center gap-4">
           {/* Logo & Title */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+              <Image src="/images/logos/DHI.webp" alt="DHI" width={32} height={32} className="w-8 h-8 object-contain" />
             </div>
             <h1 className="text-sm font-bold tracking-wide text-white">
               DHI Data Lake
@@ -241,12 +257,18 @@ export default function Home() {
                       style={isActive ? { background: `${company.sectorColor}22`, color: company.sectorColor, boxShadow: `0 0 8px ${company.sectorColor}20` } : {}}
                     >
                       <span className="flex items-center gap-1.5 whitespace-nowrap">
-                        <span
-                          className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold flex-shrink-0"
-                          style={{ background: `${company.sectorColor}25`, color: company.sectorColor }}
-                        >
-                          {company.shortName.charAt(0)}
-                        </span>
+                        {companyLogos[company.id] ? (
+                          <span className="w-4 h-4 rounded flex-shrink-0 overflow-hidden flex items-center justify-center bg-white p-px">
+                            <Image src={companyLogos[company.id]} alt={company.shortName} width={14} height={14} className="object-contain w-full h-full" />
+                          </span>
+                        ) : (
+                          <span
+                            className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold flex-shrink-0"
+                            style={{ background: `${company.sectorColor}25`, color: company.sectorColor }}
+                          >
+                            {company.shortName.charAt(0)}
+                          </span>
+                        )}
                         {company.name}
                         {hasData && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
                       </span>
@@ -316,12 +338,18 @@ export default function Home() {
               onClick={() => { setActiveView(company.id); setCompanySearch('') }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
             >
-              <span
-                className="w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-[9px] font-bold"
-                style={{ background: `${company.sectorColor}20`, color: company.sectorColor }}
-              >
-                {company.shortName.charAt(0)}
-              </span>
+              {companyLogos[company.id] ? (
+                <span className="w-6 h-6 rounded flex-shrink-0 overflow-hidden flex items-center justify-center bg-white p-0.5">
+                  <Image src={companyLogos[company.id]} alt={company.shortName} width={20} height={20} className="object-contain w-full h-full" />
+                </span>
+              ) : (
+                <span
+                  className="w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-[9px] font-bold"
+                  style={{ background: `${company.sectorColor}20`, color: company.sectorColor }}
+                >
+                  {company.shortName.charAt(0)}
+                </span>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium text-slate-200 truncate">{company.name}</div>
                 <div className="text-[10px] text-slate-600">{company.sector}</div>
@@ -333,6 +361,33 @@ export default function Home() {
           ))}
         </div>
       )}
+
+      {/* Active company banner */}
+      {activeView !== 'map' && activeView !== 'dhi' && (() => {
+        const company = dhiCompanies.find(c => c.id === activeView)
+        if (!company) return null
+        return (
+          <div
+            className="flex-shrink-0 flex items-center gap-3 px-5 py-2 border-b z-40"
+            style={{ borderColor: `${company.sectorColor}25`, background: `${company.sectorColor}08` }}
+          >
+            {companyLogos[company.id] && (
+              <div className="w-6 h-6 rounded overflow-hidden flex items-center justify-center flex-shrink-0 bg-white p-px">
+                <Image src={companyLogos[company.id]} alt={company.shortName} width={20} height={20} className="object-contain w-full h-full" />
+              </div>
+            )}
+            <span className="text-xs font-semibold" style={{ color: company.sectorColor }}>{company.name}</span>
+            <span className="text-[10px] text-slate-700">·</span>
+            <span className="text-[10px] text-slate-500">{company.sector}</span>
+            {(company.id === 'bt' || company.id === 'drukair') && (
+              <span className="ml-auto flex items-center gap-1.5 text-[10px] font-medium text-green-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                Live Data
+              </span>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
@@ -529,10 +584,16 @@ export default function Home() {
             <div className="flex-1 flex items-center justify-center overflow-hidden">
               <div className="text-center max-w-md px-6">
                 <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold"
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold overflow-hidden"
                   style={{ background: `linear-gradient(135deg, ${company.sectorColor}33, ${company.sectorColor}11)`, border: `1px solid ${company.sectorColor}30` }}
                 >
-                  {company.shortName.slice(0, 2)}
+                  {companyLogos[company.id] ? (
+                    <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center p-2">
+                      <Image src={companyLogos[company.id]} alt={company.shortName} width={48} height={48} className="object-contain w-full h-full" />
+                    </div>
+                  ) : (
+                    company.shortName.slice(0, 2)
+                  )}
                 </div>
                 <h2 className="text-xl font-bold text-white mb-1">{company.name}</h2>
                 <p className="text-sm text-slate-500 mb-2">{company.sector}</p>

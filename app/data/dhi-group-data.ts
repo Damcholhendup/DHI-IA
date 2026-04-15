@@ -45,7 +45,7 @@ export const dhiCompanies: DHICompany[] = [
   },
   {
     id: 'drukair',
-    name: 'Drukair Corporation',
+    name: 'Drukair Corporation Limited',
     shortName: 'Drukair',
     sector: 'Aviation',
     sectorColor: '#ffab00',
@@ -307,11 +307,33 @@ export const dhiCompanies: DHICompany[] = [
       { quarter: 'Q4 2024', revenue: 160, profit: -14 },
     ],
   },
+  {
+    id: 'dcl',
+    name: 'Dungsam Cement Limited',
+    shortName: 'DCL',
+    sector: 'Manufacturing',
+    sectorColor: '#ff8f00',
+    description: 'One of the largest cement manufacturers in Bhutan, producing high-quality Portland cement for domestic construction and export to India.',
+    established: 1982,
+    employees: 520,
+    annualRevenue: 2240,
+    netProfit: 185,
+    totalAssets: 4800,
+    ownership: 51,
+    status: 'profitable',
+    keyMetrics: { 'Capacity (MT)': '400K', 'Production (MT)': '340K', 'Utilization': '85%', 'Export Share': '60%' },
+    quarterlyRevenue: [
+      { quarter: 'Q1 2024', revenue: 520, profit: 42 },
+      { quarter: 'Q2 2024', revenue: 610, profit: 52 },
+      { quarter: 'Q3 2024', revenue: 595, profit: 48 },
+      { quarter: 'Q4 2024', revenue: 515, profit: 43 },
+    ],
+  },
 ]
 
 // ============ GROUP SUMMARY ============
 export const groupSummary = {
-  totalCompanies: 13,
+  totalCompanies: 14,
   totalEmployees: dhiCompanies.reduce((sum, c) => sum + c.employees, 0),
   totalRevenue: dhiCompanies.reduce((sum, c) => sum + c.annualRevenue, 0),
   totalProfit: dhiCompanies.reduce((sum, c) => sum + c.netProfit, 0),

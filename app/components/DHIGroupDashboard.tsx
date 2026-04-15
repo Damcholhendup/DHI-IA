@@ -9,6 +9,24 @@ import {
   dhiCompanies, groupSummary, sectorBreakdown, groupQuarterlyRevenue,
   topPerformers, type DHICompany
 } from '../data/dhi-group-data'
+import Image from 'next/image'
+
+const companyLogos: Record<string, string> = {
+  bt: '/images/logos/Bhutan Telecom.webp',
+  drukair: '/images/logos/Drukair.webp',
+  dgpc: '/images/logos/Druk Green power Corporation.webp',
+  bpc: '/images/logos/Bhutan Power Corporation.webp',
+  nrdc: '/images/logos/NRDCL.webp',
+  smc: '/images/logos/state mining.webp',
+  cdcl: '/images/logos/CDCL.webp',
+  ttp: '/images/logos/thimphu tech park.webp',
+  stcb: '/images/logos/STCBL.webp',
+  dpl: '/images/logos/Dungsam polymers Limited.webp',
+  abhl: '/images/logos/Azista Bhutan Healthcare.webp',
+  kil: '/images/logos/Koufuku.webp',
+  bbpl: '/images/logos/BPL.webp',
+  dcl: '/images/logos/dungsam cement.webp',
+}
 
 const COLORS = ['#00e5ff', '#00e676', '#ffab00', '#ff1744', '#d500f9', '#ffd600', '#448aff', '#e040fb', '#ff6d00', '#7c4dff']
 
@@ -123,7 +141,13 @@ export default function DHIGroupDashboard() {
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 rounded-full" style={{ background: company.sectorColor }} />
+                    {companyLogos[company.id] ? (
+                      <div className="w-6 h-6 rounded overflow-hidden flex items-center justify-center flex-shrink-0 bg-white p-0.5">
+                        <Image src={companyLogos[company.id]} alt={company.shortName} width={20} height={20} className="object-contain w-full h-full" />
+                      </div>
+                    ) : (
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: company.sectorColor }} />
+                    )}
                     <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: company.sectorColor }}>
                       {company.sector}
                     </span>
@@ -335,7 +359,13 @@ export default function DHIGroupDashboard() {
               <div className="px-5 py-4 border-b border-[#1a2744] flex items-start justify-between">
                 <div className="flex-1 min-w-0 pr-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2 h-2 rounded-full" style={{ background: selectedCompany.sectorColor }} />
+                    {companyLogos[selectedCompany.id] ? (
+                      <div className="w-6 h-6 rounded overflow-hidden flex items-center justify-center flex-shrink-0 bg-white p-0.5">
+                        <Image src={companyLogos[selectedCompany.id]} alt={selectedCompany.shortName} width={20} height={20} className="object-contain w-full h-full" />
+                      </div>
+                    ) : (
+                      <div className="w-2 h-2 rounded-full" style={{ background: selectedCompany.sectorColor }} />
+                    )}
                     <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: selectedCompany.sectorColor }}>
                       {selectedCompany.sector}
                     </span>
