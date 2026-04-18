@@ -54,7 +54,7 @@ function DashboardLoader({ label }: { label: string }) {
   )
 }
 
-const allTypes = ['hydropower', 'telecom', 'airline']
+const allTypes = ['hydropower', 'telecom', 'airline', '5g', 'complaints']
 
 type CompanyView = string
 
@@ -69,11 +69,20 @@ const categoryConfig: Record<string, { label: string; icon: JSX.Element; color: 
     ),
   },
   telecom: {
-    label: 'Telecom',
+    label: 'BT Cell Regions',
     color: '#00e676',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00e676" strokeWidth="2" strokeLinecap="round">
         <path d="M12 20V10" /><path d="M6 20v-4" /><path d="M18 20v-8" /><path d="M2 20h20" />
+      </svg>
+    ),
+  },
+  '5g': {
+    label: '5G Sites',
+    color: '#d500f9',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d500f9" strokeWidth="2" strokeLinecap="round">
+        <path d="M1 6l4.5 4.5" /><path d="M22.5 6L18 10.5" /><path d="M12 2v4" /><circle cx="12" cy="14" r="5" /><path d="M10 14h2.5l-1 2.5" />
       </svg>
     ),
   },
@@ -83,6 +92,15 @@ const categoryConfig: Record<string, { label: string; icon: JSX.Element; color: 
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffab00" strokeWidth="2" strokeLinecap="round">
         <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
+      </svg>
+    ),
+  },
+  complaints: {
+    label: 'Complaints',
+    color: '#ff6d00',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff6d00" strokeWidth="2" strokeLinecap="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /><path d="M12 8v4" /><circle cx="12" cy="15" r="0.5" fill="#ff6d00" />
       </svg>
     ),
   },
@@ -98,6 +116,58 @@ export default function Home() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [companySearch, setCompanySearch] = useState('')
   const [carouselPaused, setCarouselPaused] = useState(false)
+
+  // Live infrastructure counts from APIs
+  const [liveCounts, setLiveCounts] = useState<Record<string, number>>(() => ({
+    hydropower: infrastructureAssets.filter(a => a.type === 'hydropower').length,
+    telecom:    0,
+    airline:    infrastructureAssets.filter(a => a.type === 'airline').length,
+    '5g':       0,
+    complaints: 0,
+  }))
+
+  useEffect(() => {
+    // BT: fetch total tower count from pagination (1 row is enough)
+    fetch('/api/bhutan_telecom/cell_tower_details?page=1&limit=1')
+      .then(r => r.json())
+      .then(d => {
+        const total = d.pagination?.total_rows ?? 0
+        if (total > 0) setLiveCounts(prev => ({ ...prev, telecom: total }))
+      })
+      .catch(() => {})
+
+    // DrukAir: count distinct active Bhutan airports from passenger traffic
+    const bhutanCodes = new Set(['PBH', 'BUT', 'YON', 'GLU'])
+    fetch('/api/drukair/passenger_traffic?page=1&limit=500')
+      .then(r => r.json())
+      .then(d => {
+        const active = new Set<string>()
+        for (const row of (d.data ?? [])) {
+          if (bhutanCodes.has(row.orac)) active.add(row.orac)
+          if (bhutanCodes.has(row.dstc)) active.add(row.dstc)
+        }
+        if (active.size > 0) setLiveCounts(prev => ({ ...prev, airline: active.size }))
+      })
+      .catch(() => {})
+
+    // 5G: count towers where network_5g is set
+    fetch('/api/bhutan_telecom/cell_tower_details?limit=5000')
+      .then(r => r.json())
+      .then(d => {
+        const count = (d.data ?? []).filter((t: { network_5g: string | null }) => t.network_5g).length
+        if (count > 0) setLiveCounts(prev => ({ ...prev, '5g': count }))
+      })
+      .catch(() => {})
+
+    // Complaints: total count from pagination
+    fetch('/api/bhutan_telecom/customer_complaints?limit=1')
+      .then(r => r.json())
+      .then(d => {
+        const total = d.pagination?.total_rows ?? 0
+        if (total > 0) setLiveCounts(prev => ({ ...prev, complaints: total }))
+      })
+      .catch(() => {})
+  }, [])
   const companyLogos: Record<string, string> = {
     bt: '/images/logos/Bhutan Telecom.webp',
     drukair: '/images/logos/Drukair.webp',
@@ -401,7 +471,8 @@ export default function Home() {
                 <div className="space-y-1">
                   {Object.entries(categoryConfig).map(([key, config]) => {
                     const isActive = activeFilters.includes(key)
-                    const count = infrastructureAssets.filter(a => a.type === key).length
+                    const count = liveCounts[key] ?? 0
+                    const isTelecom = key === 'telecom'
                     return (
                       <button
                         key={key}
@@ -415,8 +486,13 @@ export default function Home() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <span className="text-xs font-medium text-slate-300 block truncate">{config.label}</span>
+                          {isTelecom && count > 0 && (
+                            <span className="text-[9px] text-slate-600 leading-tight">Live data</span>
+                          )}
                         </div>
-                        <span className="text-[10px] font-mono text-slate-600">{count}</span>
+                        <span className="text-[10px] font-mono text-slate-600">
+                          {isTelecom && count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count || '—'}
+                        </span>
                       </button>
                     )
                   })}
