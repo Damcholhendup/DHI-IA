@@ -28,12 +28,12 @@ const COLORS = ['#00e5ff', '#00e676', '#ffab00', '#ff1744', '#d500f9', '#ffd600'
 const subtabs = ['Revenue', 'Network', 'Subscribers', 'Complaints', 'Coverage', 'Tariffs']
 
 const tabDescriptions: Record<string, string> = {
-  'Revenue':     'Monthly voice, data and SMS revenue streams — combined earnings trend across all service categories.',
-  'Network':     'Cell tower KPI metrics (availability, drop rate), regional data traffic and voice traffic by technology generation.',
-  'Subscribers': 'Call detail records (postpaid voice) and prepaid data session usage — subscriber activity patterns from sampled CDR data.',
-  'Complaints':  'Customer complaint analytics — breakdown by district (dzongkhag), complaint type, service and resolution status.',
-  'Coverage':    'Cell tower deployment by region — site inventory with 2G/3G/4G/5G technology bands per site.',
-  'Tariffs':     'Active postpaid monthly plans and prepaid data packs — current pricing and quota reference from the API.',
+  'Revenue':     'Monthly voice, data and SMS revenue streams — combined earnings trend across all service categories. Nu. = Ngultrum, Bhutan\'s national currency. Figures are shown in millions (M).',
+  'Network':     'Cell tower KPI (Key Performance Indicator) metrics — availability, drop rate and throughput by technology generation. PS = Packet-Switched (mobile data). DL = Downlink (download). KPI benchmarks are regulatory targets set by BICMA.',
+  'Subscribers': 'CDR (Call Detail Record) analytics — a sampled log of individual voice calls, SMS messages and data sessions from BT\'s subscriber base. Prepaid and postpaid breakdowns shown separately.',
+  'Complaints':  'Customer complaint analytics — breakdown by district (Dzongkhag), complaint type, service category and ticket status. "Caller Withdrew" = customer called back to cancel their own ticket. "Escalated" = referred to a specialist team.',
+  'Coverage':    'Cell tower deployment by region — site inventory with 2G (GSM), 3G (UMTS), 4G (LTE) and 5G (NR) technology bands per site.',
+  'Tariffs':     'Active postpaid monthly plans and prepaid data packs — current pricing and data quota reference from the BT API.',
 }
 
 const tipStyle = { background: '#0f1a2e', border: '1px solid #1a2744', borderRadius: 8, color: '#e8edf5' }
@@ -70,7 +70,7 @@ export default function BTDashboard() {
       {/* Content — split layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: charts */}
-        <div className={`overflow-y-auto p-6 space-y-6 transition-all ${detailPanel ? 'w-[60%]' : 'w-full'}`}>
+        <div className={`overflow-y-auto p-6 space-y-6 transition-all ${detailPanel ? 'w-1/2' : 'w-full'}`}>
           {activeSubTab === 'Revenue'     && <RevenueView onDetail={setDetailPanel} />}
           {activeSubTab === 'Network'     && <NetworkView onDetail={setDetailPanel} />}
           {activeSubTab === 'Subscribers' && <SubscribersView onDetail={setDetailPanel} />}
@@ -81,7 +81,7 @@ export default function BTDashboard() {
 
         {/* Right: detail panel */}
         {detailPanel && (
-          <div className="w-[40%] border-l border-[#1a2744] overflow-y-auto p-5 animate-fade-in-up">
+          <div className="w-1/2 border-l border-[#1a2744] overflow-y-auto p-5 animate-fade-in-up">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-green-400">{detailPanel.title}</h3>
               <button onClick={() => setDetailPanel(null)} className="p-1 rounded-md text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-colors">
@@ -295,34 +295,18 @@ function RevenueView({ onDetail }: { onDetail: DetailSetter }) {
         </ResponsiveContainer>
       </ChartCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Revenue Mix — Latest Month" period={latestRevPeriod}>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie data={mixPie} cx="50%" cy="50%" outerRadius={100} innerRadius={45} dataKey="value"
-                label={({ name, percent }: any) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
-                {mixPie.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
-              </Pie>
-              <Tooltip contentStyle={tipStyle} formatter={(v: any) => [`Nu. ${v.toFixed(1)}M`, '']} />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title="Voice vs Data Revenue Trend" period={revPeriod}>
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1a2744" />
-              <XAxis dataKey="month" tick={{ fill: '#7a8baa', fontSize: 11 }} />
-              <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} />
-              <Tooltip contentStyle={tipStyle} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="Voice (M)" stroke="#00e5ff" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="Data (M)"  stroke="#ffab00" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="SMS (M)"   stroke="#d500f9" strokeWidth={2}   dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
+      <ChartCard title="Revenue Mix — Latest Month" period={latestRevPeriod}>
+        <ResponsiveContainer width="100%" height={280}>
+          <PieChart>
+            <Pie data={mixPie} cx="50%" cy="50%" outerRadius={100} innerRadius={45} dataKey="value"
+              label={({ name, percent }: any) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
+              {mixPie.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+            </Pie>
+            <Tooltip contentStyle={tipStyle} formatter={(v: any) => [`Nu. ${v.toFixed(1)}M`, '']} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+          </PieChart>
+        </ResponsiveContainer>
+      </ChartCard>
     </>
   )
 }
@@ -417,11 +401,12 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
   return (
     <>
       <InsightBanner insights={insights} />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard label="KPI Parameters" value={latestKpis.length.toString()} sub={`Year ${latestYear}`} />
         <StatCard label="Traffic Regions" value={regions.length.toString()} sub={`Year ${latestTY}`} color="#00e5ff" />
-        <StatCard label="Avg DL Throughput" value={`${avgThroughput} Mbps`} sub="Core areas" color="#00e676" />
-        <StatCard label="Avg PS Drop Rate" value={`${avgDrop}%`} sub="Core areas" color="#ff1744" />
+        <StatCard label="Avg Download Speed" value={`${avgThroughput} Mbps`} sub="Downlink throughput, core areas" color="#00e676" />
+        <StatCard label="PS Drop Rate" value={`${avgDrop}%`} sub="Lower is better (target < 0.5%)" color="#ff1744" />
+        <StatCard label="Avg PS Success Rate" value={`${avgSuccess}%`} sub="Higher is better (target > 99%)" color="#00bfa5" />
       </div>
 
       {/* Tech-split data traffic trend (LTE / 3G / 5G) */}
@@ -436,7 +421,7 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
           <AreaChart data={techChart}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1a2744" />
             <XAxis dataKey="month" tick={{ fill: '#7a8baa', fontSize: 10 }} />
-            <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} />
+            <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} unit=" GB" />
             <Tooltip contentStyle={tipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Area type="monotone" dataKey="LTE" stackId="1" stroke="#00e5ff" fill="#00e5ff" fillOpacity={0.2} strokeWidth={2} />
@@ -447,13 +432,13 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
       </ChartCard>
 
       {/* Core area KPI report */}
-      <ChartCard title="Core Area KPI Report — DL Throughput (Mbps)" onClick={() => onDetail({
+      <ChartCard title="Core Area KPI — Download Speed by Location, Feb 2026 (Mbps)" onClick={() => onDetail({
         title: 'Core Area KPI Report',
         data: kpiReportSorted.map(r => ({
           Location: r.location_of_core_areas,
-          'DL Throughput (Mbps)': r.dl_user_throughput_mbps,
-          'PS Drop Rate (%)': r.ps_drop_rate,
-          'PS Success Rate (%)': r.ps_success_rate,
+          'Download Speed (Mbps)': r.dl_user_throughput_mbps,
+          'Packet-Switch Drop Rate (%)': r.ps_drop_rate,
+          'Packet-Switch Success Rate (%)': r.ps_success_rate,
         }))
       })}>
         <ResponsiveContainer width="100%" height={300}>
@@ -462,7 +447,7 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
             <XAxis type="number" tick={{ fill: '#7a8baa', fontSize: 11 }} unit=" Mbps" />
             <YAxis type="category" dataKey="location_of_core_areas" tick={{ fill: '#7a8baa', fontSize: 10 }} width={90} />
             <Tooltip contentStyle={tipStyle} formatter={(v: any) => [`${v} Mbps`, 'DL Throughput']} />
-            <Bar dataKey="dl_user_throughput_mbps" name="DL Throughput" fill={G} radius={[0, 3, 3, 0]} />
+            <Bar dataKey="dl_user_throughput_mbps" name="Download Speed" fill={G} radius={[0, 3, 3, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -521,7 +506,7 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
             <BarChart data={trafficChart}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1a2744" />
               <XAxis dataKey="month" tick={{ fill: '#7a8baa', fontSize: 11 }} />
-              <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} />
+              <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} unit=" TB" />
               <Tooltip contentStyle={tipStyle} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {regions.map((r, i) => (
@@ -539,7 +524,7 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
           <AreaChart data={voiceChart}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1a2744" />
             <XAxis dataKey="month" tick={{ fill: '#7a8baa', fontSize: 10 }} />
-            <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} />
+            <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} unit=" M" />
             <Tooltip contentStyle={tipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Area type="monotone" dataKey="3G"    stackId="1" stroke="#ffab00" fill="#ffab00" fillOpacity={0.15} strokeWidth={2} />
@@ -698,17 +683,30 @@ function ComplaintsView({ onDetail }: { onDetail: DetailSetter }) {
   if (loading) return <LoadingState />
   if (error)   return <ErrorState message={error} />
 
-  const byDzongkhag = groupBy(complaints, 'dzongkhag', 15)
-  const byType      = groupBy(complaints, 'complaint_type')
-  const byStatus    = groupBy(complaints, 'status')
-  const byService   = groupBy(complaints, 'service', 10)
-  const closedCount = complaints.filter(c => c.status === 'Close' || c.status === 'Closed').length
+  // Normalise raw API status values to human-readable labels
+  const STATUS_LABEL: Record<string, string> = {
+    Close: 'Closed', Closed: 'Closed',
+    Withdrew: 'Caller Withdrew',
+    Escalate: 'Escalated', Escalated: 'Escalated',
+    'In Progress': 'In Progress',
+  }
+  const normalised = complaints.map(c => ({
+    ...c,
+    status: STATUS_LABEL[c.status ?? ''] ?? c.status ?? 'Unknown',
+  }))
+
+  const byDzongkhag = groupBy(normalised, 'dzongkhag', 15)
+  const byType      = groupBy(normalised, 'complaint_type')
+  const byStatus    = groupBy(normalised, 'status')
+  const byService   = groupBy(normalised, 'service', 10)
+  const closedCount    = normalised.filter(c => c.status === 'Closed').length
+  const withdrawnCount = normalised.filter(c => c.status === 'Caller Withdrew').length
   const resolvedPct = complaints.length ? ((closedCount / complaints.length) * 100).toFixed(1) : '—'
 
   const insights = [
-    `${complaints.length.toLocaleString()} complaints loaded — ${resolvedPct}% closed/resolved.`,
-    byDzongkhag.length ? `Most complaints from ${byDzongkhag[0].name} district (${byDzongkhag[0].value} tickets).` : '',
-    byType.length ? `Top complaint type: "${byType[0].name}" (${byType[0].value} cases).` : '',
+    `${complaints.length.toLocaleString()} complaints logged — ${closedCount.toLocaleString()} formally closed (${resolvedPct}%). ${withdrawnCount.toLocaleString()} tickets were withdrawn by the caller (customer resolved issue before official closure).`,
+    byDzongkhag.length ? `Highest volume district: ${byDzongkhag[0].name} with ${byDzongkhag[0].value.toLocaleString()} tickets — likely reflects population density in the capital.` : '',
+    byType.length ? `Top complaint category: "${byType[0].name}" (${byType[0].value.toLocaleString()} cases) — click any chart for the full breakdown.` : '',
   ].filter(Boolean) as string[]
   const compPeriod = (() => {
     const ys = [...new Set(complaints.map(c => c.year).filter(y => y != null))].sort() as number[]
@@ -778,7 +776,7 @@ function ComplaintsView({ onDetail }: { onDetail: DetailSetter }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#1a2744" />
             <XAxis dataKey="name" tick={{ fill: '#7a8baa', fontSize: 11 }} />
             <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} />
-            <Tooltip contentStyle={tipStyle} />
+            <Tooltip contentStyle={tipStyle} labelStyle={{ color: '#ffffff' }} itemStyle={{ color: '#ffffff' }} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
             <Bar dataKey="value" name="Count" radius={[3, 3, 0, 0]}>
               {byType.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
             </Bar>
@@ -872,9 +870,9 @@ function CoverageView({ onDetail }: { onDetail: DetailSetter }) {
       </div>
 
       {/* Tower table */}
-      <ChartCard title="Cell Site Inventory (first 50 shown)" onClick={() => onDetail({
-        title: 'Cell Tower Sites',
-        data: towers.slice(0, 200).map(t => ({
+      <ChartCard title="Cell Site Inventory (first 50 shown — click to expand all)" onClick={() => onDetail({
+        title: 'Cell Tower Sites — All Sites',
+        data: towers.map(t => ({
           'Site ID': t.site_id, 'Site Name': t.site_name_, Region: t.regions,
           '4G': (t.lte_1800 || t.lte_700_ || t.lte_850 || t.lte_900 || t.tdd_2300) ? 'Yes' : 'No',
           '2G': t.network_2g ? 'Yes' : 'No', '3G': t.network_3g ? 'Yes' : 'No', '5G': t.network_5g ? 'Yes' : 'No',

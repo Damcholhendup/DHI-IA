@@ -25,12 +25,11 @@ const COLORS = ['#00e5ff', '#ffab00', '#00e676', '#ff1744', '#d500f9', '#ffd600'
 const subtabs = ['P&L', 'Balance Sheet', 'Cash Flow', 'Passengers', 'Fleet & Ops']
 
 const tabDescriptions: Record<string, string> = {
-  'P&L':            'Revenue, expenses and net profit/loss — Drukair\'s financial performance across fiscal reporting periods.',
-  'Balance Sheet':  'Total assets, liabilities and shareholders\' equity — a financial position snapshot at each period end.',
-  'Cash Flow':      'How cash actually moves through operations, investing and financing activities — distinct from accounting profit.',
-  'Passengers':     'Passenger volumes, load factors (RPK ÷ ASK) and route-level traffic from the operational data system.',
-  'Fleet & Ops':    'Block hours, sectors served and aircraft utilisation — the operational efficiency story behind the numbers.',
-
+  'P&L':            'Revenue, expenses and net profit/loss — Drukair\'s financial performance across fiscal reporting periods. Nu. (BTN) = Bhutanese Ngultrum, Bhutan\'s national currency. Figures shown in billions (B) or millions (M).',
+  'Balance Sheet':  'Total assets, liabilities and shareholders\' equity — a financial position snapshot at each period end. Assets = what the company owns; Liabilities = what it owes; Equity = owners\' net stake.',
+  'Cash Flow':      'How cash actually moves through the business — distinct from accounting profit. Operating = day-to-day business; Investing = planes & infrastructure; Financing = loans & dividends.',
+  'Passengers':     'Passenger volumes and seat utilisation. ASK (Available Seat Kilometres) = total seating capacity offered. RPK (Revenue Passenger Kilometres) = capacity actually sold. Load Factor = RPK ÷ ASK × 100%.',
+  'Fleet & Ops':    'Block hours, route sectors and aircraft utilisation — the operational efficiency story. Block hours = total time from aircraft pushback to engine shutdown, the key metric for maintenance scheduling.',
 }
 
 const tipStyle = { background: '#0f1a2e', border: '1px solid #1a2744', borderRadius: 8, color: '#e8edf5' }
@@ -1038,7 +1037,7 @@ function PassengersView({ onDetail }: { onDetail: DetailSetter }) {
     <>
       <InsightBanner insights={paxInsights} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label={`Pax (${latest?.year ?? ''})`} value={latest ? `${Math.round(latest.pax / 1000)}K` : '—'} sub="Master data aggregate" period={masterPeriod} />
+        <StatCard label={`Passengers (${latest?.year ?? ''})`} value={latest ? `${Math.round(latest.pax / 1000)}K` : '—'} sub="Annual total from master data" period={masterPeriod} />
         <StatCard label="ASK" value={latest ? `${(latest.ask / 1e6).toFixed(0)}M SKm` : '—'} sub={`${latest?.year ?? ''}`} color="#00e5ff" period={masterPeriod} />
         <StatCard label="RPK" value={latest ? `${(latest.rpk / 1e6).toFixed(0)}M PKm` : '—'} sub={`${latest?.year ?? ''}`} color="#00e676" period={masterPeriod} />
         <StatCard label="Load Factor" value={`${latest?.loadFactor ?? '—'}%`} sub={`${latest?.year ?? ''} RPK/ASK`} color="#ffab00" period={masterPeriod} />
