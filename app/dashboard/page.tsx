@@ -9,6 +9,7 @@ import { dhiCompanies } from '../data/dhi-group-data'
 import { useAuth } from '../contexts/AuthContext'
 import { canAccessCompany } from '../lib/auth'
 import Image from 'next/image'
+import ChatPanel from '../components/ChatPanel'
 
 const NetworkMap = dynamic(() => import('../components/NetworkMap'), {
   ssr: false,
@@ -466,7 +467,7 @@ export default function Home() {
           <>
             {/* Left Sidebar */}
             <aside className="flex-shrink-0 w-56 glass-panel border-r border-[#1a2744] flex flex-col z-40">
-              <div className="px-4 py-4">
+              <div className="px-4 py-4 flex-1 min-h-0 overflow-y-auto">
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-3">Infrastructure Layers</h2>
                 <div className="space-y-1">
                   {Object.entries(categoryConfig).map(([key, config]) => {
@@ -499,17 +500,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* AI Assistant Placeholder */}
-              <div className="mt-auto border-t border-[#1a2744] p-4">
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-3">AI Assistant</h2>
-                <div className="rounded-lg border border-dashed border-[#1a2744] p-3 flex flex-col items-center gap-2 opacity-60 hover:opacity-80 transition-opacity cursor-not-allowed">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    <path d="M8 10h8M8 14h5" />
-                  </svg>
-                  <p className="text-[10px] text-slate-600 text-center leading-tight">AI Chat<br/><span className="text-slate-700">Coming Soon</span></p>
-                </div>
-              </div>
             </aside>
 
             {/* Map Area */}
@@ -717,6 +707,15 @@ export default function Home() {
           )
         })()}
       </div>
+
+      {/* ===== AI ASSISTANT — always visible, portal renders into document.body ===== */}
+      <ChatPanel
+        key={activeView === 'bt' ? 'bt' : activeView === 'drukair' ? 'drukair' : 'master'}
+        endpoint={activeView === 'bt' ? 'bhutan_telecom' : activeView === 'drukair' ? 'drukair' : 'master'}
+        sessionId={`${session?.userId ?? 'anon'}-${activeView === 'bt' ? 'bt' : activeView === 'drukair' ? 'drukair' : 'master'}`}
+        accentColor={activeView === 'bt' ? '#00e676' : activeView === 'drukair' ? '#ffab00' : '#00e5ff'}
+        label={activeView === 'bt' ? 'BT AI Assistant' : activeView === 'drukair' ? 'Drukair AI Assistant' : 'AI Assistant'}
+      />
     </div>
   )
 }

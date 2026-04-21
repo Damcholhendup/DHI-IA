@@ -11,6 +11,10 @@ const nextConfig = {
         source: '/api/bhutan_telecom/:path*',
         destination: 'http://100.85.189.71:8000/bhutan_telecom/:path*',
       },
+      {
+        source: '/api/chat/:path*',
+        destination: 'http://100.85.189.71:8001/chat/:path*',
+      },
     ]
   },
 }
