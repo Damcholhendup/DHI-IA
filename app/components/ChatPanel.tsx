@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -23,15 +23,27 @@ export default function ChatPanel({
   accentColor = '#00e5ff',
   label = 'AI Assistant',
 }: ChatPanelProps) {
+  const buildSessionId = useCallback(
+    () => `${sessionId}-${endpoint}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    [sessionId, endpoint]
+  )
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput]       = useState('')
   const [busy, setBusy]         = useState(false)
   const [open, setOpen]         = useState(false)
   const [mounted, setMounted]   = useState(false)
   const [drawerWidth, setDrawerWidth] = useState(460)
+  const [activeSessionId, setActiveSessionId] = useState(buildSessionId)
   const bottomRef = useRef<HTMLDivElement>(null)
-  const inputRef  = useRef<HTMLInputElement>(null)
+  const inputRef  = useRef<HTMLTextAreaElement>(null)
   const dragRef   = useRef<{ startX: number; startWidth: number } | null>(null)
+
+  function autoResizeInput() {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = '0px'
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`
+  }
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -43,6 +55,16 @@ export default function ChatPanel({
     if (open) setTimeout(() => inputRef.current?.focus(), 80)
   }, [open])
 
+  useEffect(() => {
+    autoResizeInput()
+  }, [input, open])
+
+  useEffect(() => {
+    setMessages([])
+    setInput('')
+    setActiveSessionId(buildSessionId())
+  }, [buildSessionId])
+
   async function send() {
     const text = input.trim()
     if (!text || busy) return
@@ -50,10 +72,10 @@ export default function ChatPanel({
     setMessages(prev => [...prev, { role: 'user', content: text }])
     setBusy(true)
     try {
-      const res = await fetch(`/api/chat/${endpoint}`, {
+      const res = await fetch(`/api/chat-proxy/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, session_id: sessionId }),
+        body: JSON.stringify({ message: text, session_id: activeSessionId }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data: { response: string } = await res.json()
@@ -68,11 +90,14 @@ export default function ChatPanel({
       ])
     } finally {
       setBusy(false)
-      setTimeout(() => inputRef.current?.focus(), 50)
+      setTimeout(() => {
+        autoResizeInput()
+        inputRef.current?.focus()
+      }, 50)
     }
   }
 
-  function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
+  function onKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
@@ -103,9 +128,12 @@ export default function ChatPanel({
 
   async function clearChat() {
     setMessages([])
+    const currentSessionId = activeSessionId
     try {
-      await fetch(`/api/chat/${encodeURIComponent(sessionId)}`, { method: 'DELETE' })
+      await fetch(`/api/chat-proxy/${encodeURIComponent(currentSessionId)}`, { method: 'DELETE' })
     } catch { /* best-effort */ }
+    setInput('')
+    setActiveSessionId(buildSessionId())
   }
 
   if (!mounted) return null
@@ -273,14 +301,15 @@ export default function ChatPanel({
           className="flex-shrink-0 border-t border-[#1a2744] p-4"
           style={{ background: '#060b18' }}
         >
-          <div className="flex gap-3 items-center">
-            <input
+          <div className="flex gap-3 items-end">
+            <textarea
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={onKey}
+              rows={1}
               placeholder="Ask about the data…"
-              className="flex-1 bg-[#0c1425] border border-[#1a2744] rounded-xl px-4 py-3 text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-cyan-500/40 transition-colors"
+              className="flex-1 min-h-[44px] max-h-40 resize-none overflow-y-auto bg-[#0c1425] border border-[#1a2744] rounded-xl px-4 py-3 text-sm leading-5 text-slate-300 placeholder-slate-700 focus:outline-none focus:border-cyan-500/40 transition-colors"
             />
             <button
               onClick={send}
@@ -300,28 +329,24 @@ export default function ChatPanel({
       </div>
 
       {/* Floating toggle button */}
-      <button
-        onClick={() => setOpen(v => !v)}
-        title={open ? 'Close AI Assistant' : 'Open AI Assistant'}
-        className="fixed bottom-6 right-6 z-[9992] w-14 h-14 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-        style={{
-          background: open ? '#1a2744' : '#0d1e35',
-          border: `2px solid ${accentColor}`,
-          color: accentColor,
-          boxShadow: `0 0 18px ${accentColor}60, 0 4px 16px rgba(0,0,0,0.6)`,
-        }}
-      >
-        {open ? (
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          title="Open AI Assistant"
+          className="fixed bottom-6 right-6 z-[9992] w-14 h-14 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+          style={{
+            background: '#0d1e35',
+            border: `2px solid ${accentColor}`,
+            color: accentColor,
+            boxShadow: `0 0 18px ${accentColor}60, 0 4px 16px rgba(0,0,0,0.6)`,
+          }}
+        >
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             <path d="M8 10h8M8 14h5" />
           </svg>
-        )}
-      </button>
+        </button>
+      )}
     </>,
     document.body
   )

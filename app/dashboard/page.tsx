@@ -39,7 +39,7 @@ const BTDashboard = dynamic(() => import('../components/BTDashboard'), {
 
 const DrukAirDashboard = dynamic(() => import('../components/DrukAirDashboard'), {
   ssr: false,
-  loading: () => <DashboardLoader label="Druk Air" />,
+  loading: () => <DashboardLoader label="Drukair" />,
 })
 
 function DashboardLoader({ label }: { label: string }) {
@@ -132,7 +132,7 @@ export default function Home() {
     fetch('/api/bhutan_telecom/cell_tower_details?page=1&limit=1')
       .then(r => r.json())
       .then(d => {
-        const total = d.pagination?.total_rows ?? 0
+        const total = d.pagination?.total_rows ?? d.pagination?.total ?? 0
         if (total > 0) setLiveCounts(prev => ({ ...prev, telecom: total }))
       })
       .catch(() => {})
@@ -164,7 +164,7 @@ export default function Home() {
     fetch('/api/bhutan_telecom/customer_complaints?limit=1')
       .then(r => r.json())
       .then(d => {
-        const total = d.pagination?.total_rows ?? 0
+        const total = d.pagination?.total_rows ?? d.pagination?.total ?? 0
         if (total > 0) setLiveCounts(prev => ({ ...prev, complaints: total }))
       })
       .catch(() => {})

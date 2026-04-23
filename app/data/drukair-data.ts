@@ -1,4 +1,4 @@
-// Druk Air (Royal Bhutan Airlines) Data - Realistic data based on Bhutan's aviation
+// Drukair (Royal Bhutan Airlines) Data - Realistic data based on Bhutan's aviation
 
 // ============ FLIGHT OPERATIONS ============
 export interface FlightOpsRecord {

@@ -670,13 +670,24 @@ function SubscribersView({ onDetail }: { onDetail: DetailSetter }) {
 // ─── Complaints Tab ───────────────────────────────────────────────────────────
 function ComplaintsView({ onDetail }: { onDetail: DetailSetter }) {
   const [complaints, setComplaints] = useState<BTComplaint[]>([])
+  const [totalComplaints, setTotalComplaints] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState('')
 
   useEffect(() => {
-    fetchBTComplaints()
-      .then(setComplaints)
-      .catch(e => setError(e.message))
+    Promise.all([
+      fetchBTComplaints(),
+      fetch('/api/bhutan_telecom/customer_complaints?page=1&limit=1').then(r => {
+        if (!r.ok) throw new Error(`BT API ${r.status}: customer_complaints total`)
+        return r.json()
+      }),
+    ])
+      .then(([rows, meta]) => {
+        setComplaints(rows)
+        const total = Number(meta?.pagination?.total_rows ?? meta?.pagination?.total ?? rows.length)
+        setTotalComplaints(Number.isFinite(total) ? total : rows.length)
+      })
+      .catch(e => setError(e.message ?? 'Failed to load complaints'))
       .finally(() => setLoading(false))
   }, [])
 
@@ -702,9 +713,12 @@ function ComplaintsView({ onDetail }: { onDetail: DetailSetter }) {
   const closedCount    = normalised.filter(c => c.status === 'Closed').length
   const withdrawnCount = normalised.filter(c => c.status === 'Caller Withdrew').length
   const resolvedPct = complaints.length ? ((closedCount / complaints.length) * 100).toFixed(1) : '—'
+  const shownCount = complaints.length
+  const totalCount = totalComplaints > 0 ? totalComplaints : shownCount
+  const sampleNote = totalCount > shownCount ? ` Showing ${shownCount.toLocaleString()} sampled rows for charting.` : ''
 
   const insights = [
-    `${complaints.length.toLocaleString()} complaints logged — ${closedCount.toLocaleString()} formally closed (${resolvedPct}%). ${withdrawnCount.toLocaleString()} tickets were withdrawn by the caller (customer resolved issue before official closure).`,
+    `${totalCount.toLocaleString()} complaints logged in total.${sampleNote} In the loaded sample, ${closedCount.toLocaleString()} are formally closed (${resolvedPct}%) and ${withdrawnCount.toLocaleString()} were withdrawn by the caller.`,
     byDzongkhag.length ? `Highest volume district: ${byDzongkhag[0].name} with ${byDzongkhag[0].value.toLocaleString()} tickets — likely reflects population density in the capital.` : '',
     byType.length ? `Top complaint category: "${byType[0].name}" (${byType[0].value.toLocaleString()} cases) — click any chart for the full breakdown.` : '',
   ].filter(Boolean) as string[]
@@ -717,8 +731,8 @@ function ComplaintsView({ onDetail }: { onDetail: DetailSetter }) {
     <>
       <InsightBanner insights={insights} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Complaints" value={complaints.length.toLocaleString()} sub="Loaded from API" color="#ff1744" period={compPeriod} />
-        <StatCard label="Closed / Resolved" value={closedCount.toLocaleString()} sub={`${resolvedPct}% rate`} period={compPeriod} />
+        <StatCard label="Total Complaints" value={totalCount.toLocaleString()} sub="From API total_rows" color="#ff1744" period={compPeriod} />
+        <StatCard label="Closed / Resolved" value={closedCount.toLocaleString()} sub={`${resolvedPct}% rate (sample)`} period={compPeriod} />
         <StatCard label="Top Type" value={byType[0]?.name ?? '—'} sub={`${byType[0]?.value ?? 0} cases`} color="#ffab00" period={compPeriod} />
         <StatCard label="Top District" value={byDzongkhag[0]?.name ?? '—'} sub={`${byDzongkhag[0]?.value ?? 0} tickets`} color="#00e5ff" period={compPeriod} />
       </div>

@@ -40,8 +40,8 @@ export const infrastructureAssets: InfraAsset[] = [
   { id: 9, name: 'Punatsangchhu-II HEP', type: 'hydropower', position: [27.45, 89.78], status: 'under_construction', capacity: '1,020 MW', output: '4,340 GWh/yr', details: { 'Company': 'PHPA-II', 'River': 'Punatsangchhu', 'Type': 'Run-of-river', 'Note': 'Under construction', 'District': 'Wangdue' } },
 
   // ── Airlines / Airport ──────────────────────────────────────────────────
-  { id: 50, name: 'Paro International Airport', type: 'airline', position: [27.4032, 89.4246], status: 'operational', capacity: 'Runway 2,265m', details: { 'IATA': 'PBH', 'Airlines': 'Druk Air, Bhutan Airlines', 'Elevation': '2,235m' } },
+  { id: 50, name: 'Paro International Airport', type: 'airline', position: [27.4032, 89.4246], status: 'operational', capacity: 'Runway 2,265m', details: { 'IATA': 'PBH', 'Airlines': 'Drukair, Bhutan Airlines', 'Elevation': '2,235m' } },
   { id: 51, name: 'Gelephu Mindfulness City Airport', type: 'airline', position: [26.862, 90.492], status: 'under_construction', capacity: 'Under Construction', details: { 'IATA': 'GLU', 'Project': 'Greenfield', 'Target': '2027', 'Type': 'Domestic + International' } },
   { id: 52, name: 'Yonphula Domestic Airport', type: 'airline', position: [27.256, 91.515], status: 'offline', capacity: 'Runway 1,200m', details: { 'IATA': 'YON', 'Status': 'Limited Operations', 'Elevation': '2,743m' } },
-  { id: 53, name: 'Bathpalathang Airport', type: 'airline', position: [27.562, 90.747], status: 'operational', capacity: 'Runway 1,200m', details: { 'IATA': 'BUT', 'Airlines': 'Druk Air', 'Elevation': '2,580m' } },
+  { id: 53, name: 'Bathpalathang Airport', type: 'airline', position: [27.562, 90.747], status: 'operational', capacity: 'Runway 1,200m', details: { 'IATA': 'BUT', 'Airlines': 'Drukair', 'Elevation': '2,580m' } },
 ]
