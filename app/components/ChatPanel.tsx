@@ -69,8 +69,59 @@ export default function ChatPanel({
     const text = input.trim()
     if (!text || busy) return
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: text }])
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', content: text },
+      { role: 'assistant', content: '' },
+    ])
     setBusy(true)
+
+    const appendAssistantChunk = (chunk: string) => {
+      if (!chunk) return
+      setMessages(prev => {
+        if (prev.length === 0) return prev
+        const next = [...prev]
+        const last = next[next.length - 1]
+        if (last?.role === 'assistant') {
+          next[next.length - 1] = { ...last, content: `${last.content}${chunk}` }
+        } else {
+          next.push({ role: 'assistant', content: chunk })
+        }
+        return next
+      })
+    }
+
+    const setAssistantContent = (content: string) => {
+      setMessages(prev => {
+        if (prev.length === 0) return prev
+        const next = [...prev]
+        const last = next[next.length - 1]
+        if (last?.role === 'assistant') {
+          next[next.length - 1] = { ...last, content }
+        } else {
+          next.push({ role: 'assistant', content })
+        }
+        return next
+      })
+    }
+
+    const processSseBlock = (block: string) => {
+      for (const line of block.split('\n')) {
+        const trimmed = line.trim()
+        if (!trimmed.startsWith('data:')) continue
+        const payload = trimmed.replace(/^data:\s?/, '')
+        if (!payload) continue
+        try {
+          const event = JSON.parse(payload) as { text?: string; done?: boolean; session_id?: string }
+          if (event.text) appendAssistantChunk(event.text)
+          if (event.session_id) setActiveSessionId(event.session_id)
+          if (event.done) setBusy(false)
+        } catch {
+          // Ignore malformed partial SSE lines; full events are parsed from buffered blocks.
+        }
+      }
+    }
+
     try {
       const res = await fetch(`/api/chat-proxy/${endpoint}`, {
         method: 'POST',
@@ -78,16 +129,34 @@ export default function ChatPanel({
         body: JSON.stringify({ message: text, session_id: activeSessionId }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data: { response: string } = await res.json()
-      setMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: data.response ?? 'No response received.' },
-      ])
+
+      const contentType = (res.headers.get('content-type') ?? '').toLowerCase()
+      if (contentType.includes('text/event-stream') && res.body) {
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const blocks = buffer.split('\n\n')
+          buffer = blocks.pop() ?? ''
+
+          for (const block of blocks) processSseBlock(block)
+        }
+
+        buffer += decoder.decode()
+        if (buffer.trim()) {
+          for (const block of buffer.split('\n\n')) processSseBlock(block)
+        }
+      } else {
+        const data = await res.json().catch(() => null) as { response?: string; detail?: string } | null
+        setAssistantContent(data?.response ?? data?.detail ?? 'No response received.')
+      }
     } catch {
-      setMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: 'Unable to reach the AI agent — please ensure Tailscale is active.' },
-      ])
+      setAssistantContent('Unable to reach the AI agent — please ensure Tailscale is active.')
     } finally {
       setBusy(false)
       setTimeout(() => {

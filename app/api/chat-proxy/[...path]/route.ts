@@ -24,17 +24,23 @@ export async function POST(
   try {
     const upstream = await fetch(buildTarget(path), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream, application/json',
+      },
       body,
       signal: controller.signal,
       cache: 'no-store',
     })
 
-    const text = await upstream.text()
     const contentType = upstream.headers.get('content-type') ?? 'application/json'
-    return new NextResponse(text, {
+    return new NextResponse(upstream.body, {
       status: upstream.status,
-      headers: { 'content-type': contentType },
+      headers: {
+        'content-type': contentType,
+        'cache-control': 'no-cache, no-transform',
+        connection: 'keep-alive',
+      },
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown upstream error'
