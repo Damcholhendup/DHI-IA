@@ -55,7 +55,7 @@ export default function BTDashboard() {
               className={`px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 activeSubTab === tab
                   ? 'bg-green-500/15 text-green-400 border border-green-500/30'
-                  : 'text-slate-500 hover:text-slate-300 border border-transparent hover:bg-white/[0.02]'
+                  : 'text-slate-300 hover:text-slate-300 border border-transparent hover:bg-white/[0.02]'
               }`}
             >
               {tab}
@@ -63,7 +63,7 @@ export default function BTDashboard() {
           ))}
         </div>
         {tabDescriptions[activeSubTab] && (
-          <p className="text-[11px] text-slate-500 mt-2 pl-0.5 leading-relaxed">{tabDescriptions[activeSubTab]}</p>
+          <p className="text-[11px] text-slate-300 mt-2 pl-0.5 leading-relaxed">{tabDescriptions[activeSubTab]}</p>
         )}
       </div>
 
@@ -84,7 +84,7 @@ export default function BTDashboard() {
           <div className="w-1/2 border-l border-[#1a2744] overflow-y-auto p-5 animate-fade-in-up">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-green-400">{detailPanel.title}</h3>
-              <button onClick={() => setDetailPanel(null)} className="p-1 rounded-md text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-colors">
+              <button onClick={() => setDetailPanel(null)} className="p-1 rounded-md text-slate-300 hover:text-slate-300 hover:bg-[#1a2744] transition-colors">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -101,7 +101,7 @@ export default function BTDashboard() {
                   {detailPanel.data.map((row, i) => (
                     <tr key={i} className="border-b border-[#1a2744]/50 hover:bg-white/[0.02] transition-colors">
                       {Object.values(row).map((val, j) => (
-                        <td key={j} className={`py-2 px-3 ${j === 0 ? 'text-slate-300 font-medium' : 'text-slate-400 font-mono'}`}>
+                        <td key={j} className={`py-2 px-3 ${j === 0 ? 'text-slate-300 font-medium' : 'text-slate-300 font-mono'}`}>
                           {typeof val === 'number' ? val.toLocaleString() : val}
                         </td>
                       ))}
@@ -152,7 +152,7 @@ function StatCard({ label, value, sub, period, color = G }: { label: string; val
         {period && <span className="text-[9px] text-slate-700 font-mono whitespace-nowrap flex-shrink-0">{period}</span>}
       </div>
       <span className="text-xl font-bold block" style={{ color }}>{value}</span>
-      {sub && <span className="text-[10px] text-slate-500 mt-1 block">{sub}</span>}
+      {sub && <span className="text-[10px] text-slate-300 mt-1 block">{sub}</span>}
     </div>
   )
 }
@@ -216,7 +216,7 @@ function ErrorState({ message }: { message: string }) {
         <path strokeLinecap="round" strokeWidth={1.5} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
       </svg>
       <span className="text-xs font-medium text-red-400">API Unreachable</span>
-      <span className="text-[11px] text-slate-500 max-w-xs text-center">{message}</span>
+      <span className="text-[11px] text-slate-300 max-w-xs text-center">{message}</span>
       <span className="text-[10px] text-slate-600">Ensure Tailscale is active — API at 100.85.189.71:8000</span>
     </div>
   )
@@ -485,7 +485,7 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
                         : 'bg-green-500/15 text-green-400'
                       }`}>{k.technology}</span>
                     </td>
-                    <td className="py-2 pr-2 text-slate-500 text-[9px]">{k.benchmark}</td>
+                    <td className="py-2 pr-2 text-slate-300 text-[9px]">{k.benchmark}</td>
                     {KPI_MONTHS.map(m => {
                       const v = k[m as keyof BTCellTowerKPI] as number | null
                       return <td key={m} className="py-1 pr-1 text-right font-mono text-slate-300 text-[9px]">{v != null ? v.toFixed(1) : '—'}</td>
@@ -912,7 +912,7 @@ function CoverageView({ onDetail }: { onDetail: DetailSetter }) {
                   <tr key={i} className="border-b border-[#1a2744]/50 hover:bg-white/[0.02]">
                     <td className="py-2 pr-3 font-mono text-cyan-400 text-[10px]">{t.site_id}</td>
                     <td className="py-2 pr-3 text-slate-300">{t.site_name_}</td>
-                    <td className="py-2 pr-3 text-slate-400">{t.regions}</td>
+                    <td className="py-2 pr-3 text-slate-300">{t.regions}</td>
                     <td className="py-2 pr-2 text-center">{t.network_2g ? <span className="text-green-400">✓</span> : <span className="text-slate-700">—</span>}</td>
                     <td className="py-2 pr-2 text-center">{t.network_3g ? <span className="text-green-400">✓</span> : <span className="text-slate-700">—</span>}</td>
                     <td className="py-2 pr-2 text-center">{h4          ? <span className="text-cyan-400">✓</span>  : <span className="text-slate-700">—</span>}</td>
@@ -1160,7 +1160,7 @@ function TariffsView({ onDetail }: { onDetail: DetailSetter }) {
               {prepaidVoice.map((r, i) => (
                 <tr key={i} className="border-b border-[#1a2744]/50 hover:bg-white/[0.02]">
                   <td className="py-2 pr-4 text-slate-300 font-medium">{r.call_type}</td>
-                  <td className="py-2 pr-4 text-slate-400">{r.timing}</td>
+                  <td className="py-2 pr-4 text-slate-300">{r.timing}</td>
                   <td className="py-2 text-right text-green-400 font-mono">{r.tariff_nu}</td>
                 </tr>
               ))}

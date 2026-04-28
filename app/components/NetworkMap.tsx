@@ -122,7 +122,7 @@ function ResetViewControl({ bounds }: { bounds: [[number, number], [number, numb
     <button
       onClick={() => map.flyToBounds(bounds, { padding: [10, 10], duration: 0.8 })}
       title="Reset map view"
-      className="absolute z-[1000] flex items-center gap-1.5 glass-panel rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-slate-400 hover:text-cyan-400 transition-colors"
+      className="absolute z-[1000] flex items-center gap-1.5 glass-panel rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-slate-300 hover:text-cyan-400 transition-colors"
       style={{ top: '80px', left: '10px' }}
     >
       <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round">
@@ -298,10 +298,10 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
                   </div>
                   <h3 className="font-bold text-base text-white mb-2">{r.count} Cell Sites</h3>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs border-t border-slate-700 pt-2">
-                    {r.has5g  > 0 && <><span className="text-slate-500">5G Sites</span><span className="text-purple-400 font-mono">{r.has5g}</span></>}
-                    {r.lte4g  > 0 && <><span className="text-slate-500">4G / LTE</span><span className="text-green-400 font-mono">{r.lte4g}</span></>}
-                    {r.has3g  > 0 && <><span className="text-slate-500">3G Sites</span><span className="text-amber-400 font-mono">{r.has3g}</span></>}
-                    {r.has2g  > 0 && <><span className="text-slate-500">2G Sites</span><span className="text-cyan-400 font-mono">{r.has2g}</span></>}
+                    {r.has5g  > 0 && <><span className="text-slate-300">5G Sites</span><span className="text-purple-400 font-mono">{r.has5g}</span></>}
+                    {r.lte4g  > 0 && <><span className="text-slate-300">4G / LTE</span><span className="text-green-400 font-mono">{r.lte4g}</span></>}
+                    {r.has3g  > 0 && <><span className="text-slate-300">3G Sites</span><span className="text-amber-400 font-mono">{r.has3g}</span></>}
+                    {r.has2g  > 0 && <><span className="text-slate-300">2G Sites</span><span className="text-cyan-400 font-mono">{r.has2g}</span></>}
                   </div>
                 </div>
               </Popup>
@@ -356,7 +356,7 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
                       </span>
                     </div>
                     <h3 className="font-bold text-xl text-white mb-1">{dz.count.toLocaleString()}</h3>
-                    <p className="text-xs text-slate-400">Complaints logged (2025)</p>
+                    <p className="text-xs text-slate-300">Complaints logged (2025)</p>
                   </div>
                 </Popup>
               </CircleMarker>
@@ -390,24 +390,24 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
                         asset.status === 'operational' ? 'bg-green-400' :
                         asset.status === 'maintenance' ? 'bg-amber-400' : 'bg-red-400'
                       }`} />
-                      <span className="text-slate-400 capitalize">{asset.status.replace('_', ' ')}</span>
+                      <span className="text-slate-300 capitalize">{asset.status.replace('_', ' ')}</span>
                     </div>
                     <div className="space-y-1 text-xs border-t border-slate-700 pt-2">
                       {asset.capacity && (
                         <div className="flex justify-between gap-4">
-                          <span className="text-slate-500">Installed Capacity</span>
+                          <span className="text-slate-300">Installed Capacity</span>
                           <span className="text-slate-200 font-medium">{asset.capacity}</span>
                         </div>
                       )}
                       {asset.output && (
                         <div className="flex justify-between gap-4">
-                          <span className="text-slate-500">Annual Output</span>
+                          <span className="text-slate-300">Annual Output</span>
                           <span className="text-slate-200 font-medium">{asset.output}</span>
                         </div>
                       )}
                       {asset.details?.River && (
                         <div className="flex justify-between gap-4">
-                          <span className="text-slate-500">River</span>
+                          <span className="text-slate-300">River</span>
                           <span className="text-slate-200">{asset.details.River}</span>
                         </div>
                       )}
@@ -419,19 +419,19 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
                       )}
                       {asset.details?.District && (
                         <div className="flex justify-between gap-4">
-                          <span className="text-slate-500">District</span>
+                          <span className="text-slate-300">District</span>
                           <span className="text-slate-200">{asset.details.District}</span>
                         </div>
                       )}
                       {asset.details?.Commissioned && (
                         <div className="flex justify-between gap-4">
-                          <span className="text-slate-500">Commissioned</span>
+                          <span className="text-slate-300">Commissioned</span>
                           <span className="text-slate-200">{asset.details.Commissioned}</span>
                         </div>
                       )}
                       {asset.details?.Company && (
                         <div className="flex justify-between gap-4">
-                          <span className="text-slate-500">Operator</span>
+                          <span className="text-slate-300">Operator</span>
                           <span className="text-slate-200">{asset.details.Company}</span>
                         </div>
                       )}
@@ -452,18 +452,18 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
                         asset.status === 'maintenance' ? 'bg-amber-400' :
                         asset.status === 'under_construction' ? 'bg-purple-400' : 'bg-red-400'
                       }`} />
-                      <span className="text-slate-400 capitalize">{asset.status.replace('_', ' ')}</span>
+                      <span className="text-slate-300 capitalize">{asset.status.replace('_', ' ')}</span>
                     </div>
                     <div className="space-y-1 text-xs border-t border-slate-700 pt-2">
                       {asset.capacity && (
                         <div className="flex justify-between gap-4">
-                          <span className="text-slate-500">Capacity</span>
+                          <span className="text-slate-300">Capacity</span>
                           <span className="text-slate-200 font-medium">{asset.capacity}</span>
                         </div>
                       )}
                       {asset.details && Object.entries(asset.details).map(([k, v]) => (
                         <div key={k} className="flex justify-between gap-4">
-                          <span className="text-slate-500">{k}</span>
+                          <span className="text-slate-300">{k}</span>
                           <span className="text-slate-200 text-right max-w-[130px]">{v}</span>
                         </div>
                       ))}
@@ -511,8 +511,8 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
               <div className="min-w-[160px]">
                 <h3 className="font-bold text-sm text-white mb-1">{route.label}</h3>
                 <div className="space-y-1 text-xs pt-1 border-t border-slate-700">
-                  <div className="flex justify-between gap-4"><span className="text-slate-500">Passengers</span><span className="text-slate-200 font-mono">{route.pax.toLocaleString()}</span></div>
-                  <div className="flex justify-between gap-4"><span className="text-slate-500">Type</span><span className={route.dom_int === 'INT' ? 'text-amber-400' : 'text-cyan-400'}>{route.dom_int}</span></div>
+                  <div className="flex justify-between gap-4"><span className="text-slate-300">Passengers</span><span className="text-slate-200 font-mono">{route.pax.toLocaleString()}</span></div>
+                  <div className="flex justify-between gap-4"><span className="text-slate-300">Type</span><span className={route.dom_int === 'INT' ? 'text-amber-400' : 'text-cyan-400'}>{route.dom_int}</span></div>
                 </div>
               </div>
             </Popup>
@@ -523,7 +523,7 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
       {/* BT Region bubble legend */}
       {activeFilters.includes('telecom') && btTowers.length > 0 && (
         <div className="absolute bottom-4 left-4 z-[1000] glass-panel rounded-lg p-3">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 block mb-2">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-300 block mb-2">
             BT Infrastructure · {btTowers.length.toLocaleString()} Sites
           </span>
           <div className="flex flex-col gap-1.5">
@@ -537,7 +537,7 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
                     background: `${color}30`,
                   }} />
                   <span className="text-slate-300 font-medium">{regionFullNames[r.region] ?? r.region}</span>
-                  <span className="text-slate-500 ml-auto pl-3 font-mono">{r.count}</span>
+                  <span className="text-slate-300 ml-auto pl-3 font-mono">{r.count}</span>
                 </div>
               )
             })}
@@ -546,7 +546,7 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
             {[['#d500f9','5G'],['#00e676','4G'],['#ffab00','3G'],['#00e5ff','2G']].map(([c, l]) => (
               <div key={l} className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: c }} />
-                <span className="text-slate-500">{l}</span>
+                <span className="text-slate-300">{l}</span>
               </div>
             ))}
           </div>
@@ -566,10 +566,10 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
       {/* Complaints legend */}
       {activeFilters.includes('complaints') && dzongkhagComplaints.length > 0 && (
         <div className={`absolute z-[1000] glass-panel rounded-lg p-3 ${activeFilters.includes('telecom') || (activeFilters.includes('5g') && !activeFilters.includes('telecom')) ? 'bottom-[120px] left-4' : 'bottom-4 left-4'}`}>
-          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 block mb-1.5">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-300 block mb-1.5">
             BT Complaints · By Dzongkhag
           </span>
-          <div className="flex items-center gap-3 text-[9px] text-slate-500">
+          <div className="flex items-center gap-3 text-[9px] text-slate-300">
             <div className="flex items-center gap-1.5">
               <span className="rounded-full border border-amber-500" style={{ width:8,height:8,display:'inline-block',background:'rgba(255,109,0,0.2)' }} />
               Low
@@ -589,7 +589,7 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
             <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
               Routes from {selectedAirport.name.replace(/ (International |Domestic |Mindfulness City )?Airport/, '')}
             </span>
-            <button onClick={() => setSelectedAirport(null)} className="text-slate-600 hover:text-slate-300 ml-2">
+            <button onClick={() => setSelectedAirport(null)} className="text-slate-300 hover:text-slate-300 ml-2">
               <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>

@@ -64,7 +64,7 @@ export default function DHIGroupDashboard() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-lg font-bold text-white">DHI Group Overview</h2>
-            <p className="text-[11px] text-slate-500">Druk Holding & Investments — Commercial Arm of the Royal Government of Bhutan</p>
+            <p className="text-[11px] text-slate-300">Druk Holding &amp; Investments — Commercial Arm of the Royal Government of Bhutan</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-slate-600 uppercase tracking-widest">FY 2024</span>
@@ -84,7 +84,7 @@ export default function DHIGroupDashboard() {
           ].map((kpi, i) => (
             <div key={i} className="rounded-lg bg-[#0c1425] border border-[#1a2744] p-3">
               <span className="text-[10px] text-slate-600 uppercase tracking-wider block mb-1">{kpi.label}</span>
-              <span className="text-lg font-bold" style={{ color: kpi.color }}>{kpi.value}<span className="text-xs text-slate-500">{kpi.suffix}</span></span>
+              <span className="text-lg font-bold" style={{ color: kpi.color }}>{kpi.value}<span className="text-xs text-slate-300">{kpi.suffix}</span></span>
             </div>
           ))}
         </div>
@@ -114,10 +114,10 @@ export default function DHIGroupDashboard() {
                 />
               </div>
               {/* Carousel nav */}
-              <button onClick={() => scroll('left')} className="p-1.5 rounded-md bg-[#0c1425] border border-[#1a2744] text-slate-500 hover:text-white transition-colors">
+              <button onClick={() => scroll('left')} className="p-1.5 rounded-md bg-[#0c1425] border border-[#1a2744] text-slate-300 hover:text-white transition-colors">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
               </button>
-              <button onClick={() => scroll('right')} className="p-1.5 rounded-md bg-[#0c1425] border border-[#1a2744] text-slate-500 hover:text-white transition-colors">
+              <button onClick={() => scroll('right')} className="p-1.5 rounded-md bg-[#0c1425] border border-[#1a2744] text-slate-300 hover:text-white transition-colors">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
               </button>
             </div>
@@ -160,7 +160,7 @@ export default function DHIGroupDashboard() {
                     </span>
                   </div>
                   <h4 className="text-sm font-bold text-white leading-tight mb-1 truncate">{company.shortName}</h4>
-                  <p className="text-[10px] text-slate-500 truncate mb-2">{company.name}</p>
+                  <p className="text-[10px] text-slate-300 truncate mb-2">{company.name}</p>
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-slate-600 block">Revenue</span>
@@ -218,8 +218,8 @@ export default function DHIGroupDashboard() {
                       return (
                         <div className="recharts-custom-tooltip">
                           <p className="text-xs font-bold text-white mb-1">{d.name}</p>
-                          <p className="text-[11px] text-slate-400">Revenue: Nu. {formatNu(d.revenue)}</p>
-                          <p className="text-[11px] text-slate-400">Companies: {d.companies}</p>
+                          <p className="text-[11px] text-slate-300">Revenue: Nu. {formatNu(d.revenue)}</p>
+                          <p className="text-[11px] text-slate-300">Companies: {d.companies}</p>
                         </div>
                       )
                     }}
@@ -230,7 +230,7 @@ export default function DHIGroupDashboard() {
                 {sectorBreakdown.map((s, i) => (
                   <div key={i} className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full" style={{ background: s.color }} />
-                    <span className="text-[10px] text-slate-500">{s.name}</span>
+                    <span className="text-[10px] text-slate-300">{s.name}</span>
                   </div>
                 ))}
               </div>
@@ -329,7 +329,7 @@ export default function DHIGroupDashboard() {
                       <td className="px-3 py-2.5">
                         <span className="inline-flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: c.sectorColor }} />
-                          <span className="text-slate-400">{c.sector}</span>
+                          <span className="text-slate-300">{c.sector}</span>
                         </span>
                       </td>
                       <td className="px-3 py-2.5 text-right text-slate-300 font-mono">Nu. {formatNu(c.annualRevenue)}</td>
@@ -339,8 +339,8 @@ export default function DHIGroupDashboard() {
                       <td className={`px-3 py-2.5 text-right font-mono ${c.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {((c.netProfit / c.annualRevenue) * 100).toFixed(1)}%
                       </td>
-                      <td className="px-3 py-2.5 text-right text-slate-400 font-mono">{c.employees.toLocaleString()}</td>
-                      <td className="px-3 py-2.5 text-right text-slate-400 font-mono">{c.ownership}%</td>
+                      <td className="px-3 py-2.5 text-right text-slate-300 font-mono">{c.employees.toLocaleString()}</td>
+                      <td className="px-3 py-2.5 text-right text-slate-300 font-mono">{c.ownership}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -371,11 +371,11 @@ export default function DHIGroupDashboard() {
                     </span>
                   </div>
                   <h3 className="text-sm font-bold text-white leading-tight">{selectedCompany.name}</h3>
-                  <p className="text-[11px] text-slate-500 mt-1">{selectedCompany.description}</p>
+                  <p className="text-[11px] text-slate-300 mt-1">{selectedCompany.description}</p>
                 </div>
                 <button
                   onClick={() => setSelectedCompany(null)}
-                  className="p-1 rounded-md text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-colors flex-shrink-0"
+                  className="p-1 rounded-md text-slate-300 hover:text-slate-300 hover:bg-[#1a2744] transition-colors flex-shrink-0"
                 >
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
@@ -394,8 +394,8 @@ export default function DHIGroupDashboard() {
                   }`} />
                   {selectedCompany.status.charAt(0).toUpperCase() + selectedCompany.status.slice(1)}
                 </span>
-                <span className="text-xs text-slate-500">Est. {selectedCompany.established}</span>
-                <span className="text-xs text-slate-500 ml-auto">DHI: {selectedCompany.ownership}%</span>
+                <span className="text-xs text-slate-300">Est. {selectedCompany.established}</span>
+                <span className="text-xs text-slate-300 ml-auto">DHI: {selectedCompany.ownership}%</span>
                 {!['bt', 'drukair'].includes(selectedCompany.id) && (
                   <span className="text-[9px] text-slate-600 bg-slate-800/60 border border-slate-700/40 px-1.5 py-0.5 rounded-full">
                     Estimated data
@@ -446,7 +446,7 @@ export default function DHIGroupDashboard() {
                   <div className="divide-y divide-[#1a2744]">
                     {Object.entries(selectedCompany.keyMetrics).map(([key, value]) => (
                       <div key={key} className="flex items-center justify-between px-3 py-2">
-                        <span className="text-xs text-slate-500">{key}</span>
+                        <span className="text-xs text-slate-300">{key}</span>
                         <span className="text-xs font-medium text-slate-300">{value}</span>
                       </div>
                     ))}

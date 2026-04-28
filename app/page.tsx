@@ -155,7 +155,7 @@ export default function LandingPage() {
           </span>
         </h1>
 
-        <p className="text-slate-400 text-base max-w-2xl leading-relaxed mb-10">
+        <p className="text-slate-300 text-base max-w-2xl leading-relaxed mb-10">
           A unified data intelligence platform for Druk Holding &amp; Investments — bringing together
           fragmented business data from multiple sources into a single, intelligent system that enables
           real-time analytics, AI-driven insights, and data-driven decision-making across Bhutan&apos;s national enterprises.
@@ -174,7 +174,7 @@ export default function LandingPage() {
           </Link>
           <a
             href="#features"
-            className="px-7 py-3 rounded-xl text-sm font-semibold text-slate-300 border border-[#1a2744] hover:border-cyan-500/30 hover:text-white transition-all"
+            className="px-7 py-3 rounded-xl text-sm font-semibold text-slate-300 border border-[#1a2744] hover:border-cyan-500/30 hover:text-slate-300 transition-all"
             style={{ background: 'rgba(12,20,37,0.6)' }}
           >
             Learn More
@@ -198,7 +198,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white mb-2">The Problem</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">
+                <p className="text-sm text-slate-300 leading-relaxed">
                   Companies in Bhutan store their business data — financial records, sales figures, and performance metrics — across
                   different systems and locations, making it difficult to see the bigger picture or make informed decisions.
                   Analysing this data manually is slow, error-prone, and often misses critical patterns.
@@ -222,7 +222,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white mb-2">Our Solution</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">
+                <p className="text-sm text-slate-300 leading-relaxed">
                   A smart analytics platform that brings all data together in one place, analyses it automatically, and presents
                   clear insights through an easy-to-use dashboard — turning days of manual work into minutes.
                 </p>
@@ -236,7 +236,7 @@ export default function LandingPage() {
               ].map(s => (
                 <div key={s.title} className="rounded-xl p-4 border" style={{ background: `${s.color}08`, borderColor: `${s.color}20` }}>
                   <div className="text-xs font-bold mb-1.5" style={{ color: s.color }}>{s.title}</div>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">{s.desc}</p>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">{s.desc}</p>
                 </div>
               ))}
             </div>
@@ -254,7 +254,7 @@ export default function LandingPage() {
               style={{ background: 'rgba(12,20,37,0.7)' }}
             >
               <div className="text-2xl font-extrabold mb-1" style={{ color: s.color }}>{s.value}</div>
-              <div className="text-[11px] text-slate-500 uppercase tracking-wider">{s.label}</div>
+              <div className="text-[11px] text-slate-300 uppercase tracking-wider">{s.label}</div>
             </div>
           ))}
         </div>
@@ -265,7 +265,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-white mb-3">Platform Capabilities</h2>
-            <p className="text-sm text-slate-500 max-w-md mx-auto">
+            <p className="text-sm text-slate-300 max-w-md mx-auto">
               Everything leadership needs to monitor, analyse, and act on operational data across the DHI group.
             </p>
           </div>
@@ -293,7 +293,7 @@ export default function LandingPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">{f.desc}</p>
+                <p className="text-xs text-slate-300 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -305,7 +305,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-white mb-3">Pilot Companies</h2>
-            <p className="text-sm text-slate-500 max-w-md mx-auto">
+            <p className="text-sm text-slate-300 max-w-md mx-auto">
               Phase 1 of DHI IA is live with two subsidiaries. More companies will be onboarded as APIs are integrated.
             </p>
           </div>
@@ -334,7 +334,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-base font-bold text-white mb-0.5">{p.name}</h3>
                 <p className="text-[11px] uppercase tracking-widest mb-3" style={{ color: p.color }}>{p.sector}</p>
-                <p className="text-xs text-slate-500 leading-relaxed mb-4">{p.desc}</p>
+                <p className="text-xs text-slate-300 leading-relaxed mb-4">{p.desc}</p>
                 <div
                   className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
                   style={{ background: `${p.color}10`, color: p.color }}
@@ -360,7 +360,7 @@ export default function LandingPage() {
             }}
           />
           <h2 className="text-2xl font-bold text-white mb-3 relative">Ready to get started?</h2>
-          <p className="text-sm text-slate-500 mb-8 relative">
+          <p className="text-sm text-slate-300 mb-8 relative">
             Sign in with your credentials to access the DHI Data Lake platform. Contact your system
             administrator if you need an account.
           </p>

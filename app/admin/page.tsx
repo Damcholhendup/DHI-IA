@@ -141,7 +141,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/dashboard')}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
+            className="p-1.5 rounded-lg text-slate-300 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -158,10 +158,10 @@ export default function AdminPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 hidden sm:block">{session?.username}</span>
+          <span className="text-xs text-slate-300 hidden sm:block">{session?.username}</span>
           <button
             onClick={logout}
-            className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
+            className="p-1.5 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all"
             title="Sign out"
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -280,7 +280,7 @@ export default function AdminPage() {
                     <button
                       onClick={() => toggleActive(user.id)}
                       title={user.isActive ? 'Deactivate' : 'Activate'}
-                      className="p-1.5 rounded-md text-slate-600 hover:text-amber-400 hover:bg-amber-500/10 transition-all"
+                      className="p-1.5 rounded-md text-slate-300 hover:text-amber-400 hover:bg-amber-500/10 transition-all"
                     >
                       {user.isActive ? (
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -295,7 +295,7 @@ export default function AdminPage() {
                     <button
                       onClick={() => deleteUser(user.id)}
                       title="Delete user"
-                      className="p-1.5 rounded-md text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="p-1.5 rounded-md text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all"
                     >
                       <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                         <polyline points="3 6 5 6 21 6" />
@@ -334,7 +334,7 @@ export default function AdminPage() {
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-md text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-all"
+                className="p-1.5 rounded-md text-slate-300 hover:text-slate-300 hover:bg-[#1a2744] transition-all"
               >
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

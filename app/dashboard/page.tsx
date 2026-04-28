@@ -21,7 +21,7 @@ const NetworkMap = dynamic(() => import('../components/NetworkMap'), {
           <div className="absolute inset-0 rounded-full border-t-2 border-cyan-400 animate-spin" />
           <div className="absolute inset-2 rounded-full border-t-2 border-purple-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
         </div>
-        <p className="text-sm text-slate-500 tracking-widest uppercase">Loading Map...</p>
+        <p className="text-sm text-slate-300 tracking-widest uppercase">Loading Map...</p>
       </div>
     </div>
   ),
@@ -49,7 +49,7 @@ function DashboardLoader({ label }: { label: string }) {
         <div className="relative w-12 h-12 mx-auto mb-3">
           <div className="absolute inset-0 rounded-full border-t-2 border-cyan-400 animate-spin" />
         </div>
-        <p className="text-sm text-slate-500 tracking-widest uppercase">Loading {label} Data...</p>
+        <p className="text-sm text-slate-300 tracking-widest uppercase">Loading {label} Data...</p>
       </div>
     </div>
   )
@@ -274,7 +274,7 @@ export default function Home() {
                 className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                   activeView === 'map'
                     ? 'bg-cyan-500/15 text-cyan-400 shadow-sm shadow-cyan-500/10'
-                    : 'text-slate-500 hover:text-slate-300'
+                    : 'text-slate-300 hover:text-slate-300'
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -290,7 +290,7 @@ export default function Home() {
                 className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                   activeView === 'dhi'
                     ? 'bg-cyan-500/15 text-cyan-400 shadow-sm shadow-cyan-500/10'
-                    : 'text-slate-500 hover:text-slate-300'
+                    : 'text-slate-300 hover:text-slate-300'
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -331,7 +331,7 @@ export default function Home() {
                       key={`${company.id}-${i}`}
                       onClick={() => setActiveView(company.id)}
                       className={`flex-shrink-0 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
-                        isActive ? '' : 'text-slate-500 hover:text-slate-300'
+                        isActive ? '' : 'text-slate-300 hover:text-slate-300'
                       }`}
                       style={isActive ? { background: `${company.sectorColor}22`, color: company.sectorColor, boxShadow: `0 0 8px ${company.sectorColor}20` } : {}}
                     >
@@ -377,7 +377,7 @@ export default function Home() {
           {dataExplorerUrl && (
             <button
               onClick={() => window.open(dataExplorerUrl, '_blank', 'noopener,noreferrer')}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-400 hover:text-cyan-400 border border-[#1a2744] hover:border-cyan-500/30 transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-300 hover:text-cyan-400 border border-[#1a2744] hover:border-cyan-500/30 transition-all"
             >
               <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -389,7 +389,7 @@ export default function Home() {
           {session?.role === 'super_admin' && (
             <button
               onClick={() => router.push('/admin')}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-400 hover:text-cyan-400 border border-[#1a2744] hover:border-cyan-500/30 transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-300 hover:text-cyan-400 border border-[#1a2744] hover:border-cyan-500/30 transition-all"
             >
               <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
@@ -402,12 +402,12 @@ export default function Home() {
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
               {session?.username?.slice(0, 2).toUpperCase() ?? 'DL'}
             </div>
-            <span className="hidden md:block text-xs text-slate-400 max-w-[100px] truncate">{session?.username}</span>
+            <span className="hidden md:block text-xs text-slate-300 max-w-[100px] truncate">{session?.username}</span>
           </div>
           <button
             onClick={logout}
             title="Sign out"
-            className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
+            className="p-1.5 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all"
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -535,15 +535,15 @@ export default function Home() {
                 <div className="glass-panel rounded-lg px-3 py-2 flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-green-400" />
-                    <span className="text-[10px] text-slate-400">{stats.operational} Active</span>
+                    <span className="text-[10px] text-slate-300">{stats.operational} Active</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-amber-400" />
-                    <span className="text-[10px] text-slate-400">{stats.maintenance} Maintenance</span>
+                    <span className="text-[10px] text-slate-300">{stats.maintenance} Maintenance</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-red-400" />
-                    <span className="text-[10px] text-slate-400">{stats.offline} Offline</span>
+                    <span className="text-[10px] text-slate-300">{stats.offline} Offline</span>
                   </div>
                 </div>
               </div>
@@ -552,13 +552,13 @@ export default function Home() {
               <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2">
                 <button
                   onClick={() => setActiveFilters(allTypes)}
-                  className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-cyan-400 transition-colors"
+                  className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-300 hover:text-cyan-400 transition-colors"
                 >
                   Show All
                 </button>
                 <button
                   onClick={() => setActiveFilters([])}
-                  className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-red-400 transition-colors"
+                  className="glass-panel rounded-lg px-3 py-1.5 text-[10px] font-medium text-slate-300 hover:text-red-400 transition-colors"
                 >
                   Hide All
                 </button>
@@ -583,7 +583,7 @@ export default function Home() {
                     </div>
                     <button
                       onClick={() => setDetailOpen(false)}
-                      className="p-1 rounded-md text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-colors flex-shrink-0"
+                      className="p-1 rounded-md text-slate-300 hover:text-slate-300 hover:bg-[#1a2744] transition-colors flex-shrink-0"
                     >
                       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>

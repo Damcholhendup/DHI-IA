@@ -52,7 +52,7 @@ export default function DrukAirDashboard() {
               className={`px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 activeSubTab === tab
                   ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                  : 'text-slate-500 hover:text-slate-300 border border-transparent hover:bg-white/[0.02]'
+                  : 'text-slate-300 hover:text-slate-300 border border-transparent hover:bg-white/[0.02]'
               }`}
             >
               {tab}
@@ -60,7 +60,7 @@ export default function DrukAirDashboard() {
           ))}
         </div>
         {tabDescriptions[activeSubTab] && (
-          <p className="text-[11px] text-slate-500 mt-2 pl-0.5 leading-relaxed">{tabDescriptions[activeSubTab]}</p>
+          <p className="text-[11px] text-slate-300 mt-2 pl-0.5 leading-relaxed">{tabDescriptions[activeSubTab]}</p>
         )}
       </div>
 
@@ -81,7 +81,7 @@ export default function DrukAirDashboard() {
           <div className="w-[40%] border-l border-[#1a2744] overflow-y-auto p-5 animate-fade-in-up">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-amber-400">{detailPanel.title}</h3>
-              <button onClick={() => setDetailPanel(null)} className="p-1 rounded-md text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-colors">
+              <button onClick={() => setDetailPanel(null)} className="p-1 rounded-md text-slate-300 hover:text-slate-300 hover:bg-[#1a2744] transition-colors">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -98,7 +98,7 @@ export default function DrukAirDashboard() {
                   {detailPanel.data.map((row, i) => (
                     <tr key={i} className="border-b border-[#1a2744]/50 hover:bg-white/[0.02] transition-colors">
                       {Object.values(row).map((val, j) => (
-                        <td key={j} className={`py-2 px-3 ${j === 0 ? 'text-slate-300 font-medium' : 'text-slate-400 font-mono'}`}>
+                        <td key={j} className={`py-2 px-3 ${j === 0 ? 'text-slate-300 font-medium' : 'text-slate-300 font-mono'}`}>
                           {typeof val === 'number' ? val.toLocaleString() : val}
                         </td>
                       ))}
@@ -145,7 +145,7 @@ function StatCard({ label, value, sub, period, color = '#ffab00' }: { label: str
         {period && <span className="text-[9px] text-slate-700 font-mono whitespace-nowrap flex-shrink-0">{period}</span>}
       </div>
       <span className="text-xl font-bold block" style={{ color }}>{value}</span>
-      {sub && <span className="text-[10px] text-slate-500 mt-1 block">{sub}</span>}
+      {sub && <span className="text-[10px] text-slate-300 mt-1 block">{sub}</span>}
     </div>
   )
 }
@@ -183,7 +183,7 @@ function InsightBanner({ insights }: { insights: string[] }) {
       </div>
       <ul className="space-y-2 flex-1">
         {insights.map((text, i) => (
-          <li key={i} className="text-[11px] text-slate-400 leading-relaxed">
+          <li key={i} className="text-[11px] text-slate-300 leading-relaxed">
             <span className="text-amber-500/60 mr-1">›</span>{text}
           </li>
         ))}
@@ -419,7 +419,7 @@ function FlightCountView({ onDetail }: { onDetail: DetailSetter }) {
               {flightCountSummary.map(r => (
                 <tr key={r.route} className="border-b border-[#1a2744]/50 hover:bg-white/[0.02] transition-colors">
                   <td className="py-2.5 pr-4 text-slate-300 font-medium">{r.route}</td>
-                  <td className="py-2.5 pr-4 text-slate-400">{r.aircraft}</td>
+                  <td className="py-2.5 pr-4 text-slate-300">{r.aircraft}</td>
                   <td className="py-2.5 pr-4 text-right text-amber-400 font-mono">{r.weekly}</td>
                   <td className="py-2.5 pr-4 text-right text-slate-300">{r.monthly}</td>
                   <td className="py-2.5 text-right text-cyan-400 font-mono">{r.annual}</td>
@@ -556,11 +556,11 @@ function FleetView({ onDetail }: { onDetail: DetailSetter }) {
                 <tr key={f.registration} className="border-b border-[#1a2744]/50 hover:bg-white/[0.02] transition-colors">
                   <td className="py-2.5 pr-4 text-slate-300 font-medium">{f.aircraft}</td>
                   <td className="py-2.5 pr-4 font-mono text-amber-400">{f.registration}</td>
-                  <td className="py-2.5 pr-4 text-slate-400">{f.type}</td>
+                  <td className="py-2.5 pr-4 text-slate-300">{f.type}</td>
                   <td className="py-2.5 pr-4 text-right text-slate-300">{f.totalSeats}</td>
-                  <td className="py-2.5 pr-4 text-right text-slate-400">{f.range}</td>
+                  <td className="py-2.5 pr-4 text-right text-slate-300">{f.range}</td>
                   <td className="py-2.5 pr-4 text-right text-cyan-400">{f.avgUtilization}</td>
-                  <td className="py-2.5 pr-4 text-right text-slate-400">{f.fuelEfficiency} L/seat/100km</td>
+                  <td className="py-2.5 pr-4 text-right text-slate-300">{f.fuelEfficiency} L/seat/100km</td>
                   <td className="py-2.5">
                     <span className="inline-flex items-center gap-1 text-[10px] text-green-400">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
@@ -621,7 +621,7 @@ function LoadingState({ msg = 'Loading data from API...' }: { msg?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 gap-4">
       <div className="w-8 h-8 rounded-full border-2 border-amber-500/30 border-t-amber-500 animate-spin" />
-      <span className="text-xs text-slate-500">{msg}</span>
+      <span className="text-xs text-slate-300">{msg}</span>
     </div>
   )
 }
@@ -631,7 +631,7 @@ function ErrorState({ message }: { message: string }) {
     <div className="flex flex-col items-center justify-center py-24 gap-3">
       <svg viewBox="0 0 24 24" className="w-10 h-10 text-red-500/60" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeWidth={1.5} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
       <span className="text-xs font-medium text-red-400">API Unreachable</span>
-      <span className="text-[11px] text-slate-500 max-w-xs text-center">{message}</span>
+      <span className="text-[11px] text-slate-300 max-w-xs text-center">{message}</span>
       <span className="text-[10px] text-slate-600 text-center">Ensure Tailscale is active — API at 100.85.189.71:8000</span>
     </div>
   )

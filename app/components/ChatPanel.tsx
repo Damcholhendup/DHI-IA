@@ -256,14 +256,14 @@ export default function ChatPanel({
             {messages.length > 0 && (
               <button
                 onClick={clearChat}
-                className="text-xs text-slate-600 hover:text-slate-400 transition-colors"
+                className="text-xs text-slate-300 hover:text-slate-300 transition-colors"
               >
                 New chat
               </button>
             )}
             <button
               onClick={() => setOpen(false)}
-              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-[#1a2744] transition-colors"
+              className="p-1.5 rounded-lg text-slate-300 hover:text-slate-300 hover:bg-[#1a2744] transition-colors"
             >
               <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                 <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
