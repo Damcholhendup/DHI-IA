@@ -117,6 +117,14 @@ export default function Home() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [companySearch, setCompanySearch] = useState('')
   const [carouselPaused, setCarouselPaused] = useState(false)
+  const [dataExplorerUrl, setDataExplorerUrl] = useState('')
+
+  useEffect(() => {
+    fetch('/api/runtime-config')
+      .then(r => r.json())
+      .then(d => { if (d.dataExplorerUrl) setDataExplorerUrl(d.dataExplorerUrl) })
+      .catch(() => {})
+  }, [])
 
   // Live infrastructure counts from APIs
   const [liveCounts, setLiveCounts] = useState<Record<string, number>>(() => ({
@@ -175,7 +183,7 @@ export default function Home() {
     dgpc: '/images/logos/Druk Green power Corporation.webp',
     bpc: '/images/logos/Bhutan Power Corporation.webp',
     nrdc: '/images/logos/NRDCL.webp',
-    smc: '/images/logos/state mining.webp',
+    smc: '/images/logos/state mining corporation limited.webp',
     cdcl: '/images/logos/CDCL.webp',
     ttp: '/images/logos/thimphu tech park.webp',
     stcb: '/images/logos/STCBL.webp',
@@ -366,6 +374,18 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-3">
+          {dataExplorerUrl && (
+            <button
+              onClick={() => window.open(dataExplorerUrl, '_blank', 'noopener,noreferrer')}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-400 hover:text-cyan-400 border border-[#1a2744] hover:border-cyan-500/30 transition-all"
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              Data Explorer
+            </button>
+          )}
           {session?.role === 'super_admin' && (
             <button
               onClick={() => router.push('/admin')}

@@ -17,7 +17,7 @@ const companyLogos: Record<string, string> = {
   dgpc: '/images/logos/Druk Green power Corporation.webp',
   bpc: '/images/logos/Bhutan Power Corporation.webp',
   nrdc: '/images/logos/NRDCL.webp',
-  smc: '/images/logos/state mining.webp',
+  smc: '/images/logos/state mining corporation limited.webp',
   cdcl: '/images/logos/CDCL.webp',
   ttp: '/images/logos/thimphu tech park.webp',
   stcb: '/images/logos/STCBL.webp',
