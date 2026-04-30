@@ -116,9 +116,23 @@ export default function DrukAirDashboard() {
 
 type DetailSetter = (detail: { title: string; data: Array<Record<string, string | number>> } | null) => void
 
-/** Format an array of ISO/partial date strings → "MMM YYYY – MMM YYYY" */
+/** Format date coverage for chips as explicit snapshot/range labels. */
 function fmtPeriod(dates: (string | null | undefined)[]): string {
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const MONTH_INDEX: Record<string, number> = {
+    jan: 0, january: 0,
+    feb: 1, february: 1,
+    mar: 2, march: 2,
+    apr: 3, april: 3,
+    may: 4,
+    jun: 5, june: 5,
+    jul: 6, july: 6,
+    aug: 7, august: 7,
+    sep: 8, sept: 8, september: 8,
+    oct: 9, october: 9,
+    nov: 10, november: 10,
+    dec: 11, december: 11,
+  }
   const parsed: Date[] = []
   for (const d of dates) {
     if (!d) continue
@@ -127,6 +141,16 @@ function fmtPeriod(dates: (string | null | undefined)[]): string {
     if (isoM) { parsed.push(new Date(+isoM[1], +isoM[2] - 1)); continue }
     const dmy = s.match(/^(\d{2})\.(\d{2})\.(\d{4})/)
     if (dmy) { parsed.push(new Date(+dmy[3], +dmy[2] - 1)); continue }
+    const mmy = s.match(/^(\d{1,2})\/(\d{4})$/)
+    if (mmy) { parsed.push(new Date(+mmy[2], +mmy[1] - 1)); continue }
+    const monY = s.match(/^([A-Za-z]{3,9})\s+(\d{4})$/)
+    if (monY) {
+      const m = MONTH_INDEX[monY[1].toLowerCase()]
+      if (m != null) {
+        parsed.push(new Date(+monY[2], m))
+        continue
+      }
+    }
     const yr = s.match(/^(\d{4})$/)
     if (yr) { parsed.push(new Date(+yr[1], 0)); continue }
   }
@@ -134,7 +158,15 @@ function fmtPeriod(dates: (string | null | undefined)[]): string {
   parsed.sort((a, b) => a.getTime() - b.getTime())
   const fmt = (d: Date) => `${MONTHS[d.getMonth()]} ${d.getFullYear()}`
   const lo = fmt(parsed[0]), hi = fmt(parsed[parsed.length - 1])
-  return lo === hi ? lo : `${lo} – ${hi}`
+  return lo === hi ? `As of ${lo}` : `Data period: ${lo} to ${hi}`
+}
+
+function fmtYearPeriod(years: (number | null | undefined)[]): string {
+  const valid = years.filter((y): y is number => typeof y === 'number' && Number.isFinite(y))
+  if (!valid.length) return ''
+  const min = Math.min(...valid)
+  const max = Math.max(...valid)
+  return min === max ? `As of ${min}` : `Data period: ${min} to ${max}`
 }
 
 function StatCard({ label, value, sub, period, color = '#ffab00' }: { label: string; value: string; sub?: string; period?: string; color?: string }) {
@@ -1007,10 +1039,7 @@ function PassengersView({ onDetail }: { onDetail: DetailSetter }) {
   const byRoute = paxData ? aggregatePaxByRoute(paxData, 10) : []
   const latest = yearlyStats[yearlyStats.length - 1]
   const masterPeriod = (() => {
-    const ys = yearlyStats.map(y => y.year)
-    if (!ys.length) return ''
-    const mn = Math.min(...ys), mx = Math.max(...ys)
-    return mn === mx ? String(mn) : `${mn} – ${mx}`
+    return fmtYearPeriod(yearlyStats.map(y => y.year))
   })()
   const paxPeriod = fmtPeriod(paxData ? paxData.map(d => d.mnth) : [])
 
@@ -1145,10 +1174,7 @@ function FleetOpsView({ onDetail }: { onDetail: DetailSetter }) {
   const sectorStats = aggregateMasterBySector(data, 12)
   const latest = yearlyStats[yearlyStats.length - 1]
   const fleetPeriod = (() => {
-    const ys = yearlyStats.map(y => y.year)
-    if (!ys.length) return ''
-    const mn = Math.min(...ys), mx = Math.max(...ys)
-    return mn === mx ? String(mn) : `${mn} – ${mx}`
+    return fmtYearPeriod(yearlyStats.map(y => y.year))
   })()
 
   const flightTypeMap = new Map<string, { pax: number; flights: number }>()

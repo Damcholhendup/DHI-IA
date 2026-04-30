@@ -120,9 +120,23 @@ export default function BTDashboard() {
 type DetailSetter = (d: { title: string; data: Array<Record<string, string | number>> } | null) => void
 
 // ─── Shared UI ────────────────────────────────────────────────────────────────
-/** Format an array of ISO/partial date strings → "MMM YYYY – MMM YYYY" */
+/** Format date coverage for chips as explicit snapshot/range labels. */
 function fmtPeriod(dates: (string | null | undefined)[]): string {
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const MONTH_INDEX: Record<string, number> = {
+    jan: 0, january: 0,
+    feb: 1, february: 1,
+    mar: 2, march: 2,
+    apr: 3, april: 3,
+    may: 4,
+    jun: 5, june: 5,
+    jul: 6, july: 6,
+    aug: 7, august: 7,
+    sep: 8, sept: 8, september: 8,
+    oct: 9, october: 9,
+    nov: 10, november: 10,
+    dec: 11, december: 11,
+  }
   const parsed: Date[] = []
   for (const d of dates) {
     if (!d) continue
@@ -133,6 +147,18 @@ function fmtPeriod(dates: (string | null | undefined)[]): string {
     // DD.MM.YYYY
     const dmy = s.match(/^(\d{2})\.(\d{2})\.(\d{4})/)
     if (dmy) { parsed.push(new Date(+dmy[3], +dmy[2] - 1)); continue }
+    // MM/YYYY
+    const mmy = s.match(/^(\d{1,2})\/(\d{4})$/)
+    if (mmy) { parsed.push(new Date(+mmy[2], +mmy[1] - 1)); continue }
+    // "Feb 2026" / "February 2026"
+    const monY = s.match(/^([A-Za-z]{3,9})\s+(\d{4})$/)
+    if (monY) {
+      const m = MONTH_INDEX[monY[1].toLowerCase()]
+      if (m != null) {
+        parsed.push(new Date(+monY[2], m))
+        continue
+      }
+    }
     // year only: 2025
     const yr = s.match(/^(\d{4})$/)
     if (yr) { parsed.push(new Date(+yr[1], 0)); continue }
@@ -141,7 +167,15 @@ function fmtPeriod(dates: (string | null | undefined)[]): string {
   parsed.sort((a, b) => a.getTime() - b.getTime())
   const fmt = (d: Date) => `${MONTHS[d.getMonth()]} ${d.getFullYear()}`
   const lo = fmt(parsed[0]), hi = fmt(parsed[parsed.length - 1])
-  return lo === hi ? lo : `${lo} – ${hi}`
+  return lo === hi ? `As of ${lo}` : `Data period: ${lo} to ${hi}`
+}
+
+function fmtYearPeriod(years: (number | null | undefined)[]): string {
+  const valid = years.filter((y): y is number => typeof y === 'number' && Number.isFinite(y))
+  if (!valid.length) return ''
+  const min = Math.min(...valid)
+  const max = Math.max(...valid)
+  return min === max ? `As of ${min}` : `Data period: ${min} to ${max}`
 }
 
 function StatCard({ label, value, sub, period, color = G }: { label: string; value: string; sub?: string; period?: string; color?: string }) {
@@ -263,19 +297,20 @@ function RevenueView({ onDetail }: { onDetail: DetailSetter }) {
   ] : []
   const revPeriod = fmtPeriod(rows.map(r => r.iso))
   const latestRevPeriod = rows.length ? fmtPeriod([rows[rows.length - 1].iso]) : ''
+  const latestMonthLabel = latest?.month ?? latestRevPeriod.replace(/^As of\s+/, '')
 
   return (
     <>
       <InsightBanner insights={insights} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Latest Total Revenue" value={fmtBTN(latest?.total ?? 0)} sub={`${momGrowth}% MoM`} period={latestRevPeriod} />
-        <StatCard label="Voice Revenue" value={fmtBTN(latest?.voice ?? 0)} sub={`${((latest?.voiceMin ?? 0) / 1e6).toFixed(1)}M min usage`} color="#00e5ff" period={latestRevPeriod} />
-        <StatCard label="Data Revenue"  value={fmtBTN(latest?.data ?? 0)} sub={`${((latest?.dataGB ?? 0) / 1e6).toFixed(1)}M GB traffic`} color="#ffab00" period={latestRevPeriod} />
-        <StatCard label="SMS Revenue"   value={fmtBTN(latest?.sms ?? 0)} sub={`${((latest?.smsUsage ?? 0) / 1e6).toFixed(1)}M messages`} color="#d500f9" period={latestRevPeriod} />
+        <StatCard label="Latest Total Revenue" value={fmtBTN(latest?.total ?? 0)} sub={`${latestMonthLabel} · ${momGrowth}% MoM`} period={revPeriod} />
+        <StatCard label="Voice Revenue" value={fmtBTN(latest?.voice ?? 0)} sub={`${latestMonthLabel} · ${((latest?.voiceMin ?? 0) / 1e6).toFixed(1)}M min usage`} color="#00e5ff" period={revPeriod} />
+        <StatCard label="Data Revenue"  value={fmtBTN(latest?.data ?? 0)} sub={`${latestMonthLabel} · ${((latest?.dataGB ?? 0) / 1e6).toFixed(1)}M GB traffic`} color="#ffab00" period={revPeriod} />
+        <StatCard label="SMS Revenue"   value={fmtBTN(latest?.sms ?? 0)} sub={`${latestMonthLabel} · ${((latest?.smsUsage ?? 0) / 1e6).toFixed(1)}M messages`} color="#d500f9" period={revPeriod} />
       </div>
 
       <ChartCard title="Monthly Revenue — Voice, Data & SMS (Millions Nu.)" period={revPeriod} onClick={() => onDetail({
-        title: 'Monthly Revenue Breakdown',
+        title: `Monthly Revenue Breakdown${revPeriod ? ` (${revPeriod})` : ''}`,
         data: rows.map(r => ({
           Month: r.month, 'Voice (Nu.)': Math.round(r.voice),
           'Data (Nu.)': Math.round(r.data), 'SMS (Nu.)': Math.round(r.sms), 'Total (Nu.)': Math.round(r.total),
@@ -386,16 +421,10 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
     kpiReport.length ? `Core area avg: ${avgThroughput} Mbps DL throughput, ${avgDrop}% PS drop rate, ${avgSuccess}% PS success rate across ${kpiReport.length} locations.` : '',
   ].filter(Boolean) as string[]
   const techPeriod = (() => {
-    const ys = techTraffic.map(r => r.year)
-    if (!ys.length) return ''
-    const mn = Math.min(...ys), mx = Math.max(...ys)
-    return mn === mx ? String(mn) : `${mn} – ${mx}`
+    return fmtYearPeriod(techTraffic.map(r => r.year))
   })()
   const voicePeriod = (() => {
-    const ys = voiceTraffic.map(r => r.year)
-    if (!ys.length) return ''
-    const mn = Math.min(...ys), mx = Math.max(...ys)
-    return mn === mx ? String(mn) : `${mn} – ${mx}`
+    return fmtYearPeriod(voiceTraffic.map(r => r.year))
   })()
 
   return (
@@ -432,8 +461,8 @@ function NetworkView({ onDetail }: { onDetail: DetailSetter }) {
       </ChartCard>
 
       {/* Core area KPI report */}
-      <ChartCard title="Core Area KPI — Download Speed by Location, Feb 2026 (Mbps)" onClick={() => onDetail({
-        title: 'Core Area KPI Report',
+      <ChartCard title="Core Area KPI — Download Speed by Location (Mbps)" onClick={() => onDetail({
+        title: 'Core Area KPI Report (latest snapshot)',
         data: kpiReportSorted.map(r => ({
           Location: r.location_of_core_areas,
           'Download Speed (Mbps)': r.dl_user_throughput_mbps,
@@ -723,8 +752,8 @@ function ComplaintsView({ onDetail }: { onDetail: DetailSetter }) {
     byType.length ? `Top complaint category: "${byType[0].name}" (${byType[0].value.toLocaleString()} cases) — click any chart for the full breakdown.` : '',
   ].filter(Boolean) as string[]
   const compPeriod = (() => {
-    const ys = [...new Set(complaints.map(c => c.year).filter(y => y != null))].sort() as number[]
-    return ys.length ? (ys[0] === ys[ys.length - 1] ? String(ys[0]) : `${ys[0]} – ${ys[ys.length - 1]}`) : ''
+    const ys = [...new Set(complaints.map(c => c.year).filter(y => y != null))] as number[]
+    return fmtYearPeriod(ys)
   })()
 
   return (
