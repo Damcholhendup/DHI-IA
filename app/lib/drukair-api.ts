@@ -121,10 +121,11 @@ export async function fetchPassengerTraffic(
  * Fetches master_data across multiple pages (in parallel after page 1).
  * Default cap: 2000 rows to keep load reasonable.
  */
-export async function fetchMasterData(maxRows = 2000): Promise<MasterDataItem[]> {
+export async function fetchMasterData(maxRows = 4000, year?: number): Promise<MasterDataItem[]> {
   const limit = 1000
+  const yearParam = year ? `&year=${year}` : ''
   const first = await apiFetch<ApiResponse<MasterDataItem>>(
-    `/drukair/master_data?page=1&limit=${limit}`
+    `/drukair/master_data?page=1&limit=${limit}${yearParam}`
   )
   const rows: MasterDataItem[] = first.data
   const totalPages = first.pagination?.total_pages ?? 1
@@ -133,7 +134,7 @@ export async function fetchMasterData(maxRows = 2000): Promise<MasterDataItem[]>
   if (pagesToFetch > 0) {
     const rest = await Promise.all(
       Array.from({ length: pagesToFetch }, (_, i) => i + 2).map(p =>
-        apiFetch<ApiResponse<MasterDataItem>>(`/drukair/master_data?page=${p}&limit=${limit}`)
+        apiFetch<ApiResponse<MasterDataItem>>(`/drukair/master_data?page=${p}&limit=${limit}${yearParam}`)
       )
     )
     rows.push(...rest.flatMap(r => r.data))

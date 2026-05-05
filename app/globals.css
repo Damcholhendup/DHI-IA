@@ -56,6 +56,30 @@ body {
 .leaflet-container {
   background: var(--bg-primary) !important;
 }
+
+.leaflet-sunlight {
+  background: #dbe6f1 !important;
+}
+
+.leaflet-sunlight .leaflet-tile {
+  filter: brightness(1) contrast(1.35) saturate(1.08);
+}
+
+.leaflet-sunlight .leaflet-control-zoom {
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.2) !important;
+}
+
+.leaflet-sunlight .leaflet-control-zoom a {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+.leaflet-sunlight .leaflet-control-zoom a:hover {
+  background: #f1f5f9 !important;
+}
+
 .leaflet-control-zoom {
   border: 1px solid var(--border-color) !important;
   border-radius: 8px !important;

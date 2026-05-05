@@ -22,13 +22,13 @@ import {
 } from '../lib/drukair-api'
 
 const COLORS = ['#00e5ff', '#ffab00', '#00e676', '#ff1744', '#d500f9', '#ffd600', '#00bfa5', '#ff6e40']
-const subtabs = ['P&L', 'Balance Sheet', 'Cash Flow', 'Passengers', 'Fleet & Ops']
+const subtabs = ['Customers', 'P&L', 'Balance Sheet', 'Cash Flow', 'Fleet & Ops']
 
 const tabDescriptions: Record<string, string> = {
+  'Customers':      'Passenger volumes, route traffic and seat utilisation — the customer view of Drukair operations. Showing recent years. ASK (Available Seat Kilometres) = total capacity offered. RPK (Revenue Passenger Kilometres) = capacity actually sold. Load Factor = RPK ÷ ASK × 100%.',
   'P&L':            'Revenue, expenses and net profit/loss — Drukair\'s financial performance across fiscal reporting periods. Nu. (BTN) = Bhutanese Ngultrum, Bhutan\'s national currency. Figures shown in billions (B) or millions (M).',
   'Balance Sheet':  'Total assets, liabilities and shareholders\' equity — a financial position snapshot at each period end. Assets = what the company owns; Liabilities = what it owes; Equity = owners\' net stake.',
   'Cash Flow':      'How cash actually moves through the business — distinct from accounting profit. Operating = day-to-day business; Investing = planes & infrastructure; Financing = loans & dividends.',
-  'Passengers':     'Passenger volumes and seat utilisation. ASK (Available Seat Kilometres) = total seating capacity offered. RPK (Revenue Passenger Kilometres) = capacity actually sold. Load Factor = RPK ÷ ASK × 100%.',
   'Fleet & Ops':    'Block hours, route sectors and aircraft utilisation — the operational efficiency story. Block hours = total time from aircraft pushback to engine shutdown, the key metric for maintenance scheduling.',
 }
 
@@ -37,7 +37,7 @@ const tipStyle = { background: '#0f1a2e', border: '1px solid #1a2744', borderRad
 function shortMonth(m: string) { return m.replace(' 2024', '').slice(0, 3) }
 
 export default function DrukAirDashboard() {
-  const [activeSubTab, setActiveSubTab] = useState('P&L')
+  const [activeSubTab, setActiveSubTab] = useState('Customers')
   const [detailPanel, setDetailPanel] = useState<{ title: string; data: Array<Record<string, string | number>> } | null>(null)
 
   return (
@@ -68,10 +68,10 @@ export default function DrukAirDashboard() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left: charts */}
         <div className={`overflow-y-auto p-6 space-y-6 transition-all ${detailPanel ? 'w-[60%]' : 'w-full'}`}>
+          {activeSubTab === 'Customers'     && <PassengersView onDetail={setDetailPanel} />}
           {activeSubTab === 'P&L'           && <PLView onDetail={setDetailPanel} />}
           {activeSubTab === 'Balance Sheet' && <BalanceSheetView onDetail={setDetailPanel} />}
           {activeSubTab === 'Cash Flow'     && <CashFlowView onDetail={setDetailPanel} />}
-          {activeSubTab === 'Passengers'    && <PassengersView onDetail={setDetailPanel} />}
           {activeSubTab === 'Fleet & Ops'   && <FleetOpsView onDetail={setDetailPanel} />}
 
         </div>
@@ -1009,6 +1009,8 @@ function CashFlowView({ onDetail }: { onDetail: DetailSetter }) {
   )
 }
 
+const MASTER_DATA_YEARS = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018] // available for data explorer
+
 // ====== PASSENGERS ======
 function PassengersView({ onDetail }: { onDetail: DetailSetter }) {
   const [masterData, setMasterData] = useState<MasterDataItem[] | null>(null)
@@ -1020,7 +1022,7 @@ function PassengersView({ onDetail }: { onDetail: DetailSetter }) {
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null)
-    Promise.all([fetchMasterData(2000), fetchPassengerTraffic(1, 1000)])
+    Promise.all([fetchMasterData(4000, 2025), fetchPassengerTraffic(1, 1000)])
       .then(([md, pt]) => {
         if (!cancelled) {
           setMasterData(md); setPaxData(pt.data); setPaxTotal(pt.total); setLoading(false)
@@ -1035,12 +1037,11 @@ function PassengersView({ onDetail }: { onDetail: DetailSetter }) {
   if (!masterData) return <LoadingState msg="No data returned" />
 
   const yearlyStats = aggregateMasterByYear(masterData)
+  const recentYearly = yearlyStats.filter(y => y.year === 2025)
   const byMonth = paxData ? aggregatePaxByMonth(paxData) : []
   const byRoute = paxData ? aggregatePaxByRoute(paxData, 10) : []
-  const latest = yearlyStats[yearlyStats.length - 1]
-  const masterPeriod = (() => {
-    return fmtYearPeriod(yearlyStats.map(y => y.year))
-  })()
+  const latest = yearlyStats.find(y => y.year === 2025) ?? yearlyStats[yearlyStats.length - 1]
+  const masterPeriod = 'As of 2025'
   const paxPeriod = fmtPeriod(paxData ? paxData.map(d => d.mnth) : [])
 
   const paxInsights: string[] = []
@@ -1072,14 +1073,14 @@ function PassengersView({ onDetail }: { onDetail: DetailSetter }) {
         <StatCard label="Load Factor" value={`${latest?.loadFactor ?? '—'}%`} sub={`${latest?.year ?? ''} RPK/ASK`} color="#ffab00" period={masterPeriod} />
       </div>
 
-      <ChartCard title="Annual Passengers by Year" period={masterPeriod} onClick={() => onDetail({
-        title: 'Annual Passenger Data',
+      <ChartCard title="Passenger Overview — 2025" period={masterPeriod} onClick={() => onDetail({
+        title: 'Annual Passenger Data — All Years',
         data: yearlyStats.map(y => ({
           Year: y.year, Passengers: y.pax, Flights: y.flights, 'Load %': y.loadFactor, Sectors: y.sectors,
         }))
       })}>
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={yearlyStats}>
+          <ComposedChart data={recentYearly}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1a2744" />
             <XAxis dataKey="year" tick={{ fill: '#7a8baa', fontSize: 11 }} />
             <YAxis yAxisId="left" tick={{ fill: '#7a8baa', fontSize: 11 }} tickFormatter={v => `${(Number(v) / 1000).toFixed(0)}K`} />
@@ -1092,9 +1093,9 @@ function PassengersView({ onDetail }: { onDetail: DetailSetter }) {
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="ASK vs RPK by Year" period={masterPeriod}>
+      <ChartCard title="ASK vs RPK — 2025" period={masterPeriod}>
         <ResponsiveContainer width="100%" height={260}>
-          <AreaChart data={yearlyStats}>
+          <AreaChart data={recentYearly}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1a2744" />
             <XAxis dataKey="year" tick={{ fill: '#7a8baa', fontSize: 11 }} />
             <YAxis tick={{ fill: '#7a8baa', fontSize: 11 }} tickFormatter={v => `${(Number(v) / 1e6).toFixed(0)}M`} />
@@ -1160,7 +1161,7 @@ function FleetOpsView({ onDetail }: { onDetail: DetailSetter }) {
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null)
-    fetchMasterData(2000)
+    fetchMasterData(4000, 2025)
       .then(d => { if (!cancelled) { setData(d); setLoading(false) } })
       .catch(e => { if (!cancelled) { setError(String(e.message)); setLoading(false) } })
     return () => { cancelled = true }

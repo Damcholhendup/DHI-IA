@@ -116,13 +116,15 @@ interface NetworkMapProps {
   activeFilters: string[]
 }
 
+type MapTheme = 'sunlight' | 'night'
+
 function ResetViewControl({ bounds }: { bounds: [[number, number], [number, number]] }) {
   const map = useMap()
   return (
     <button
       onClick={() => map.flyToBounds(bounds, { padding: [10, 10], duration: 0.8 })}
       title="Reset map view"
-      className="absolute z-[1000] flex items-center gap-1.5 glass-panel rounded-lg px-2.5 py-1.5 text-[10px] font-medium text-slate-300 hover:text-cyan-400 transition-colors"
+      className="absolute z-[1000] flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold text-slate-100 bg-slate-900/90 border border-slate-600/70 hover:text-cyan-300 transition-colors"
       style={{ top: '80px', left: '10px' }}
     >
       <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round">
@@ -134,12 +136,27 @@ function ResetViewControl({ bounds }: { bounds: [[number, number], [number, numb
   )
 }
 
+function ThemeControl({ theme, onToggle }: { theme: MapTheme; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      title="Toggle map theme for lighting conditions"
+      className="absolute z-[1000] flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold text-slate-100 bg-slate-900/90 border border-slate-600/70 hover:text-cyan-300 transition-colors"
+      style={{ top: '118px', left: '10px' }}
+    >
+      <span className="inline-block w-2 h-2 rounded-full bg-amber-300" />
+      {theme === 'sunlight' ? 'Daylight Mode' : 'Night Mode'}
+    </button>
+  )
+}
+
 export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters }: NetworkMapProps) {
   const [selectedAirport, setSelectedAirport] = useState<InfraAsset | null>(null)
   const [btTowers, setBtTowers] = useState<BTCellTowerDetail[]>([])
   const [liveRoutes, setLiveRoutes] = useState<{ route: string; pax: number; revenue: number; dom_int: string }[]>([])
   const [fiveGSites, setFiveGSites] = useState<{ name: string; lat: number; lng: number; region: string }[]>([])
   const [dzongkhagComplaints, setDzongkhagComplaints] = useState<{ name: string; count: number; pos: [number, number] }[]>([])
+  const [mapTheme, setMapTheme] = useState<MapTheme>('night')
 
   useEffect(() => {
     fetchBTTowerDetails(5000)
@@ -249,15 +266,24 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
         boundsOptions={{ padding: [10, 10] }}
         minZoom={3}
         maxZoom={14}
+        className={mapTheme === 'sunlight' ? 'leaflet-sunlight' : 'leaflet-night'}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
         zoomControl={true}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url={
+            mapTheme === 'sunlight'
+              ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+              : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+          }
         />
 
         <ResetViewControl bounds={bhutanBounds} />
+        <ThemeControl
+          theme={mapTheme}
+          onToggle={() => setMapTheme(prev => (prev === 'sunlight' ? 'night' : 'sunlight'))}
+        />
 
         {/* BT Network region bubble glows */}
         {activeFilters.includes('telecom') && regionBubbles.map((r) => {
