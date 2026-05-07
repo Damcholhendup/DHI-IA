@@ -1,10 +1,11 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, GeoJSON, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { useState, useEffect } from 'react'
 import type { InfraAsset } from '../data/infrastructure'
+import bhutanBorders from '../data/bhutan-borders.json'
 import { infrastructureAssets, typeColors } from '../data/infrastructure'
 import { fetchBTTowerDetails, towersByRegion } from '../lib/bt-api'
 import type { BTCellTowerDetail, TowerRegion } from '../lib/bt-api'
@@ -277,6 +278,16 @@ export default function NetworkMap({ onAssetClick, selectedAsset, activeFilters 
               ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
               : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
           }
+        />
+
+        <GeoJSON
+          data={bhutanBorders as never}
+          style={() => ({
+            color: mapTheme === 'night' ? '#ffffff' : '#334155',
+            weight: mapTheme === 'night' ? 0.45 : 1,
+            opacity: mapTheme === 'night' ? 0.78 : 0.3,
+            fillOpacity: 0,
+          })}
         />
 
         <ResetViewControl bounds={bhutanBounds} />
